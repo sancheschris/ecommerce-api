@@ -47,7 +47,7 @@ func TestUserValidate(t *testing.T) {
 		wantErr error
 	} {
 		{"ok", User{Name: "Alice", Email: "a@b.com", Password: "x"}, nil},
-		{"missing name", User{Name: "", Email: "a@b.com", Password: "x"}, ErrEmailIsRequired},
+		{"missing name", User{Name: "", Email: "a@b.com", Password: "x"}, ErrNameIsRequired},
 		{"missing email", User{Name: "Alice", Email: "", Password: "x"}, ErrEmailIsRequired},
 	}
 
