@@ -40,6 +40,46 @@ func TestUserWhenEmailIsRequired(t *testing.T) {
 }
 
 // Test using table-driven wat to test both Validate() and NewUser
+
+func TestNewUserTableDriven(t *testing.T) {
+	tests := []struct {
+		nameTest string
+		name string
+		email string
+		password string
+		want error
+	} {
+		{"ok", "Bob", "bob@gmail.com", "secret", nil},
+		{"missing name", "", "bob@gmail.com", "secret", ErrNameIsRequired},
+		{"missing email", "Bob", "", "secret", ErrEmailIsRequired},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.nameTest, func(t *testing.T) {
+			u, err := NewUser(tt.name, tt.email, tt.password)
+
+			if tt.want == nil {
+				if err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				if u == nil {
+					t.Errorf("got nil user on sucess")
+				}
+				if u != nil && (u.Name != tt.name || u.Email != tt.email || u.Password != tt.password) {
+					t.Errorf("fields not set correctly: %+v", u)
+				}
+				return
+			}
+			if u != nil {
+				t.Error("expected nil user on error")
+			}
+			if err != tt.want {
+				t.Errorf("got error %v, want %v", err, tt.want)
+			}
+		})
+	}
+}
+
 func TestUserValidate(t *testing.T) {
 	tests := []struct {
 		name string
