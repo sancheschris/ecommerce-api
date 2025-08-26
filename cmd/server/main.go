@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/sancheschris/ecommerce-api/configs"
-	"github.com/sancheschris/ecommerce-api/internal/entity"
+	"github.com/sancheschris/ecommerce-api/internal/model"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -16,5 +16,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&entity.User{}, &entity.Product{}, &entity.Payment{}, &entity.Order{}, &entity.OrderItem{})
+	db.AutoMigrate(&model.User{}, &model.Product{}, &model.Payment{}, &model.Order{}, &model.OrderItem{})
 }
