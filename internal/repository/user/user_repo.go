@@ -16,3 +16,15 @@ func NewUser(db *gorm.DB) *User {
 func (u *User) Create(user *model.User) error {
 	return u.DB.Create(user).Error
 }
+
+func (u *User) FindByEmail(email string) (*model.User, error) {
+	var user model.User
+	err := u.DB.First(&user, "email = ?", email).Error
+	return &user, err
+}
+
+func (u *User) GetOrders() ([]model.User, error) {
+	var users []model.User
+	err := u.DB.Preload("Orders").Find(&users).Error
+	return users, err
+}
