@@ -1,0 +1,18 @@
+package repository
+
+import (
+	"github.com/sancheschris/ecommerce-api/internal/model"
+	"gorm.io/gorm"
+)
+
+type User struct {
+	DB *gorm.DB
+}
+
+func NewUser(db *gorm.DB) *User {
+	return &User{DB: db}
+}
+
+func (u *User) Create(user *model.User) error {
+	return u.DB.Create(user).Error
+}
