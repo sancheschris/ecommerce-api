@@ -21,16 +21,18 @@ type User struct {
 }
 
 func NewUser(name, email, password string) (*User, error) {
-	newUser := &User{
-		Name: name,
-		Email: email,
-		Password: password,
-	}
-	err := newUser.Validate()
-	if err != nil {
-		return nil, err
-	}
-	return newUser, nil
+       newUser := &User{
+	       Name:      name,
+	       Email:     email,
+	       Password:  password,
+	       CreatedAt: time.Now(),
+	       Orders:    []Order{},
+       }
+       err := newUser.Validate()
+       if err != nil {
+	       return nil, err
+       }
+       return newUser, nil
 }
 
 func (u *User) Validate() error {
