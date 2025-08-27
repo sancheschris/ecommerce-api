@@ -1,4 +1,4 @@
-package repository
+package user
 
 import "github.com/sancheschris/ecommerce-api/internal/model"
 
