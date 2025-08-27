@@ -16,3 +16,12 @@ func NewProduct(db *gorm.DB) *Product {
 func (p *Product) Create(product *model.Product) error {
 	return p.DB.Create(product).Error
 }
+
+func (p *Product) GetProductByID(id int64) (*model.Product, error) {
+	var product model.Product
+	err := p.DB.First(&product, "id = ?", id).Error
+	if err != nil {
+		return nil, err
+	}
+	return &product, err
+}
