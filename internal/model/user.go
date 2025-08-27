@@ -1,8 +1,10 @@
-package entity
+package model
 
 import (
 	"errors"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -21,12 +23,18 @@ type User struct {
 }
 
 func NewUser(name, email, password string) (*User, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}   
 	newUser := &User{
-		Name: name,
-		Email: email,
-		Password: password,
-	}
-	err := newUser.Validate()
+	       Name:      name,
+	       Email:     email,
+	       Password:  string(hash),
+	       CreatedAt: time.Now(),
+	       Orders:    []Order{},
+       }
+	err = newUser.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -41,4 +49,9 @@ func (u *User) Validate() error {
 		return ErrEmailIsRequired
 	}
 	return nil
+}
+
+func (u *User) ValidatePassword(password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	return err == nil
 }

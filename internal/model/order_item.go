@@ -1,4 +1,4 @@
-package entity
+package model
 
 type OrderItem struct {
 	ID int64 `gorm:"primaryKey" json:"id"`
