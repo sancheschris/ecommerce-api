@@ -38,15 +38,12 @@ func TestFindByEmail(t *testing.T) {
 	userDB := NewUser(db)
 	err = userDB.Create(user)
 	assert.NoError(t, err)
-	assert.Nil(t, err)
 
 	usrByEmail, err := userDB.FindByEmail("chris@gm.com")
 	assert.NoError(t, err)
 	assert.NotNil(t, usrByEmail)
 	assert.Equal(t, "Chris", usrByEmail.Name)
 	assert.Equal(t, "chris@gm.com", usrByEmail.Email)
-
-	assert.False(t, usrByEmail.Email == "Bob")
 }
 
 func TestCreateUserTable(t *testing.T) {

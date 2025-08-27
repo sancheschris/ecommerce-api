@@ -24,7 +24,7 @@ type User struct {
 
 func NewUser(name, email, password string) (*User, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-    if err != nil {
+	if err != nil {
 		return nil, err
 	}   
 	newUser := &User{
@@ -34,11 +34,11 @@ func NewUser(name, email, password string) (*User, error) {
 	       CreatedAt: time.Now(),
 	       Orders:    []Order{},
        }
-       err = newUser.Validate()
-       if err != nil {
-	       return nil, err
-       }
-       return newUser, nil
+	err = newUser.Validate()
+	if err != nil {
+		return nil, err
+	}
+	return newUser, nil
 }
 
 func (u *User) Validate() error {
