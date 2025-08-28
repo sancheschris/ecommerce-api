@@ -32,3 +32,11 @@ func (p *Product) GetProducts() ([]model.Product, error) {
 	return products, err
 }
 
+func (p *Product) Delete(id int64) error {
+	var product model.Product
+	err := p.DB.First(&product, "id = ?", id).Error
+	if err != nil {
+		return err
+	}
+	return p.DB.Delete(&product).Error
+}

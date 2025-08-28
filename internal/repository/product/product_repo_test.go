@@ -128,3 +128,22 @@ func TestGetProducts(t *testing.T) {
 	assert.Contains(t, names, "Tablet")
 	assert.Contains(t, names, "TV")
 }
+
+func TestDeleteProducts(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+	db.AutoMigrate(&model.Product{})
+
+	p1, _ := model.NewProduct("Tablet", 3500.00, true)
+	db.Create(p1)
+	productDB := NewProduct(db)
+
+	err = productDB.Delete(p1.ID)
+	assert.NoError(t, err)
+
+	product, err := productDB.GetProductByID(p1.ID)
+	assert.Error(t, err)
+	assert.Nil(t, product)
+}
