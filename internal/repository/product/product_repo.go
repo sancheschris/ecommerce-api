@@ -40,3 +40,11 @@ func (p *Product) Delete(id int64) error {
 	}
 	return p.DB.Delete(&product).Error
 }
+
+func (p *Product) Update(product *model.Product) error {
+	_, err := p.GetProductByID(product.ID)
+	if err != nil {
+		return err
+	}
+	return p.DB.Save(product).Error
+}

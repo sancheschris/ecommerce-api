@@ -147,3 +147,33 @@ func TestDeleteProducts(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, product)
 }
+
+func TestUpdateProduct(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+	db.AutoMigrate(&Product{})
+
+	p1, _ := model.NewProduct("Iphone 15", 3600.00, true)
+	db.Create(p1)
+
+	productDB := NewProduct(db)
+	
+	currentProduct, err := productDB.GetProductByID(p1.ID)
+	assert.NoError(t, err)
+	assert.NotNil(t, currentProduct)
+	assert.Equal(t, "Iphone 15", currentProduct.Name)
+
+	currentProduct.Price = 5800.00
+	currentProduct.Name = "Updated Product"
+
+	err = productDB.Update(currentProduct)
+	assert.NoError(t, err)
+
+	updatedProduct, err := productDB.GetProductByID(currentProduct.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, 5800.00, updatedProduct.Price)
+	assert.Equal(t, "Updated Product", updatedProduct.Name)
+
+}
