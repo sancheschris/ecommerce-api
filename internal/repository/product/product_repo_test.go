@@ -103,3 +103,28 @@ for _, tt := range tests {
     })
 	}
 }
+
+func TestGetProducts(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
+	if err != nil {
+		t.Error(err)
+	}
+	db.AutoMigrate(&model.Product{})
+
+	p1, _ := model.NewProduct("Tablet", 3500.00, true)
+	p2, _ := model.NewProduct("TV", 5400.00, true)
+
+	db.Create(p1)
+	db.Create(p2)
+
+	productDB := NewProduct(db)
+
+	products, err := productDB.GetProducts()
+	assert.NoError(t, err)
+	assert.Len(t, products, 2)
+
+	names := []string{products[0].Name, products[1].Name}
+
+	assert.Contains(t, names, "Tablet")
+	assert.Contains(t, names, "TV")
+}

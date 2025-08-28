@@ -25,3 +25,10 @@ func (p *Product) GetProductByID(id int64) (*model.Product, error) {
 	}
 	return &product, err
 }
+
+func (p *Product) GetProducts() ([]model.Product, error) {
+	var products []model.Product
+	err := p.DB.Find(&products).Error
+	return products, err
+}
+
