@@ -3,17 +3,21 @@ module github.com/sancheschris/ecommerce-api
 go 1.24.2
 
 require (
+	github.com/go-chi/chi v1.5.1
 	github.com/go-chi/jwtauth v1.2.0
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.11.0
 	golang.org/x/crypto v0.32.0
+	gorm.io/driver/mysql v1.6.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.30.1
 )
 
 require (
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
+	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/goccy/go-json v0.3.5 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
