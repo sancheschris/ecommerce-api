@@ -153,7 +153,7 @@ func TestUpdateProduct(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	db.AutoMigrate(&Product{})
+	db.AutoMigrate(&model.Product{})
 
 	p1, _ := model.NewProduct("Iphone 15", 3600.00, true)
 	db.Create(p1)
