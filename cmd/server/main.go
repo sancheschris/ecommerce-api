@@ -28,7 +28,7 @@ func main() {
 	db.AutoMigrate(&model.User{}, &model.Product{}, &model.Payment{}, &model.Order{}, &model.OrderItem{})
 
 	userDB := repo.NewUser(db)
-	userHandler := handler.NewUserHandler(*userDB)
+	userHandler := handler.NewUserHandler(userDB)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)

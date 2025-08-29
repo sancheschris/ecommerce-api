@@ -17,9 +17,9 @@ type UserHandler struct {
 	UserDB repo.UserInterface
 }
 
-func NewUserHandler(userDB repo.User) *UserHandler {
+func NewUserHandler(userDB repo.UserInterface) *UserHandler {
 	return &UserHandler{
-		UserDB: &userDB,
+		UserDB: userDB,
 	}
 }
 
