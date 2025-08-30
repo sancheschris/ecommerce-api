@@ -8,7 +8,8 @@ import (
 	"github.com/sancheschris/ecommerce-api/configs"
 	"github.com/sancheschris/ecommerce-api/internal/handler"
 	"github.com/sancheschris/ecommerce-api/internal/model"
-	repo "github.com/sancheschris/ecommerce-api/internal/repository/user"
+	productRepo "github.com/sancheschris/ecommerce-api/internal/repository/product"
+	userRepo "github.com/sancheschris/ecommerce-api/internal/repository/user"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -27,8 +28,11 @@ func main() {
 	}
 	db.AutoMigrate(&model.User{}, &model.Product{}, &model.Payment{}, &model.Order{}, &model.OrderItem{})
 
-	userDB := repo.NewUser(db)
+	userDB := userRepo.NewUser(db)
 	userHandler := handler.NewUserHandler(userDB)
+
+	productDB := productRepo.NewProduct(db)
+	productHandler := handler.NewProductHandler(productDB)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
@@ -37,6 +41,9 @@ func main() {
 	
 	r.Post("/users", userHandler.Create)
 	r.Post("/users/generate_token", userHandler.GetJWT)
+
+	r.Post("/products", productHandler.Create)
+	r.Get("/products/{id}", productHandler.GetProductByID)
 
 	http.ListenAndServe(":8080", r)
 }
