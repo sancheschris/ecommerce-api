@@ -43,6 +43,7 @@ func main() {
 	r.Post("/users/generate_token", userHandler.GetJWT)
 
 	r.Post("/products", productHandler.Create)
+	r.Get("/products/{id}", productHandler.GetProductByID)
 
 	http.ListenAndServe(":8080", r)
 }
