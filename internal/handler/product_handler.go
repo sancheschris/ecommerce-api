@@ -58,3 +58,47 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(product)
 }
+
+func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
+	products, err := h.ProductDB.GetProducts()
+	if err != nil {
+		http.Error(w, "Cannot retrieve products", http.StatusInternalServerError)
+		return 
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(products)
+}
+
+func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+	}
+
+	existingProduct, err := h.ProductDB.GetProductByID(id)
+	if err != nil || existingProduct == nil {
+		http.Error(w, "Product not found", http.StatusNotFound)
+		return
+	}
+	
+	var productReq dto.ProductRequest
+	err = json.NewDecoder(r.Body).Decode(&productReq)
+	if err != nil {
+		http.Error(w, "Invalid reques body", http.StatusBadRequest)
+		return
+	}
+
+	existingProduct.Name = productReq.Name
+	existingProduct.Price = productReq.Price
+	existingProduct.Active = productReq.Active
+
+	err = h.ProductDB.Update(existingProduct)
+	if err != nil {
+		http.Error(w, "Error updating product", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(existingProduct)
+}
