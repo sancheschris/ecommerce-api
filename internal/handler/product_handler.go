@@ -77,8 +77,8 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid id", http.StatusBadRequest)
 	}
 
-	existingProduct, err := h.ProductDB.GetProductByID(id)
-	if err != nil || existingProduct == nil {
+	_, err = h.ProductDB.GetProductByID(id)
+	if err != nil {
 		http.Error(w, "Product not found", http.StatusNotFound)
 		return
 	}
@@ -86,19 +86,22 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	var productReq dto.ProductRequest
 	err = json.NewDecoder(r.Body).Decode(&productReq)
 	if err != nil {
-		http.Error(w, "Invalid reques body", http.StatusBadRequest)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	existingProduct.Name = productReq.Name
-	existingProduct.Price = productReq.Price
-	existingProduct.Active = productReq.Active
+	product := &model.Product{
+		ID:     id,
+		Name:   productReq.Name,
+		Price:  productReq.Price,
+		Active: productReq.Active,
+	}
 
-	err = h.ProductDB.Update(existingProduct)
+	err = h.ProductDB.Update(product)
 	if err != nil {
 		http.Error(w, "Error updating product", http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(existingProduct)
+	json.NewEncoder(w).Encode(product)
 }
