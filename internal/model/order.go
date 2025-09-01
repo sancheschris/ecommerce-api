@@ -1,6 +1,9 @@
 package model
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 type Order struct {
 	ID int64 `json:"id" gorm:"primaryKey"`
@@ -13,4 +16,34 @@ type Order struct {
 	Payments []Payment `gorm:"foreignKey:OrderID" json:"payments"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func NewOrder(userID int64, items []OrderItem) (*Order, error) {
+	order := &Order{
+		UserID: userID,
+		Items: items,
+		Status: "Pending",
+		TotalPrice: 0.0,
+		Currency: "USD",
+	}
+	err := order.Validate()
+	if err != nil {
+		return nil, err
+	}
+	return order, nil
+}
+
+func (o *Order) Validate() error {
+	if o.UserID == 0 {
+		return errors.New("user ID is required")
+	}
+	if len(o.Items) == 0 {
+		return errors.New("order must have at least one item")
+	}
+	for _, item := range o.Items {
+		if item.Qty <= 0 {
+			return errors.New("item quantity must be positive")
+		}
+	}
+	return nil
 }

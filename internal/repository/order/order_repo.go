@@ -42,3 +42,26 @@ func (o *Order) UpdateOrder(order *model.Order) error {
 	}
 	return o.DB.Save(order).Error
 }
+
+func (o *Order) DeleteOrder(id int64) error {
+	var order []model.Order
+	err := o.DB.First(&order).Error
+	if err != nil {
+		return err
+	}
+	return o.DB.Delete(&order, "id = ?", id).Error
+}
+
+func (o *Order) GetOrdersByUserID(userID int64) ([]model.Order, error) {
+	var orders []model.Order
+	err := o.DB.Where("user_id = ?", userID).Find(&orders).Error
+	if err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
+func (o *Order) AddOrderItem(orderID int64, item *model.OrderItem) error {
+	item.OrderID = orderID
+	return o.DB.Create(item).Error
+}
