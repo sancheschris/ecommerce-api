@@ -18,19 +18,26 @@ type Order struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func NewOrder(userID int64, items []OrderItem) (*Order, error) {
-	order := &Order{
-		UserID: userID,
-		Items: items,
-		Status: "Pending",
-		TotalPrice: 0.0,
-		Currency: "USD",
-	}
-	err := order.Validate()
-	if err != nil {
-		return nil, err
-	}
-	return order, nil
+func NewOrder(
+    userID int64,
+    items []OrderItem,
+    status string,
+    totalPrice float64,
+    currency string,
+    payments []Payment,
+) (*Order, error) {
+    order := &Order{
+        UserID:     userID,
+        Items:      items,
+        Status:     status,
+        TotalPrice: totalPrice,
+        Currency:   currency,
+        Payments:   payments,
+    }
+    if err := order.Validate(); err != nil {
+        return nil, err
+    }
+    return order, nil
 }
 
 func (o *Order) Validate() error {
