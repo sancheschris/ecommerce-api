@@ -106,3 +106,94 @@ func TestGetOrders(t *testing.T) {
 		assert.True(t, expected.UpdatedAt.Equal(actual.UpdatedAt))
 	}
 }
+
+func TestGetOrdersByUserID(t *testing.T) {
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	orderDB := NewOrder(db)
+
+	userID := int64(1)
+
+	order, err := model.NewOrder(userID, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice:  100},
+	},
+	"pending",
+	200,
+	"USD",
+	[]model.Payment{},)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, order)
+
+	orderDB.CreateOrder(order)
+
+	orderByID, err := orderDB.GetOrdersByUserID(order.UserID)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, orderByID)
+	assert.Equal(t, int64(1), orderByID[0].UserID)
+	assert.Equal(t, order.Status, orderByID[0].Status)
+
+}
+
+func TestGetOrderByID(t *testing.T) {
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	orderDB := NewOrder(db)
+
+	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
+
+	orderDB.CreateOrder(order)
+
+	actual, err := orderDB.GetOrderByID(order.ID)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if actual.TotalPrice != order.TotalPrice {
+		t.Errorf("actual totalPrice: %f, want 200", actual.TotalPrice)
+	}
+
+}
+
+func TestUpdateOrder(t *testing.T) {
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	orderDB := NewOrder(db)
+
+	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
+	orderDB.CreateOrder(order)
+
+	existingOrder, _ := orderDB.GetOrderByID(order.ID)
+	assert.Equal(t, 200.00, existingOrder.TotalPrice)
+	assert.Equal(t, "pending", existingOrder.Status)
+
+	existingOrder.TotalPrice = 350.00
+	existingOrder.Status = "Done"
+
+	orderDB.UpdateOrder(existingOrder)
+
+	actual, _ := orderDB.GetOrderByID(existingOrder.ID)
+
+	assert.NotNil(t, actual)
+	assert.Equal(t, "Done", actual.Status)
+	assert.Equal(t, 350.00, actual.TotalPrice)
+	assert.Equal(t, "USD", actual.Currency)
+
+}
+
+func TestDeleteOrder(t *testing.T) {
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	orderDB := NewOrder(db)
+
+	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
+	orderDB.CreateOrder(order)
+
+	existingOrder, _ := orderDB.GetOrderByID(order.ID)
+
+	assert.Equal(t, "USD", existingOrder.Currency)
+
+	err := orderDB.DeleteOrder(existingOrder.ID)
+	assert.NoError(t, err)
+
+	deletedOrder, _ := orderDB.GetOrderByID(existingOrder.ID)
+	assert.Nil(t, deletedOrder)
+
+}
