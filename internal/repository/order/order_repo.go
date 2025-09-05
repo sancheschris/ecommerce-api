@@ -1,6 +1,8 @@
 package order
 
 import (
+	"fmt"
+
 	"github.com/sancheschris/ecommerce-api/internal/model"
 	"gorm.io/gorm"
 )
@@ -28,7 +30,7 @@ func (o *Order) GetOrders() ([]model.Order, error) {
 
 func (o *Order) GetOrderByID(id int64) (*model.Order, error) {
 	var order model.Order
-	err := o.DB.First(&order, "id = ?", id).Error
+	err := o.DB.Preload("Items").First(&order, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -63,5 +65,36 @@ func (o *Order) GetOrdersByUserID(userID int64) ([]model.Order, error) {
 
 func (o *Order) AddOrderItem(orderID int64, item *model.OrderItem) error {
 	item.OrderID = orderID
-	return o.DB.Create(item).Error
+	return o.DB.Create(&item).Error
+}
+
+func (o *Order) UpdateOrderItem(orderID int64, item *model.OrderItem) error {
+	_, err := o.GetOrderByID(orderID)
+	if err != nil {
+		return err
+	}
+	if item.OrderID != orderID {
+		return fmt.Errorf("Order items does not belong to order")
+	}
+	return o.DB.Save(item).Error
+}
+
+func (o *Order) GetOrderItems(orderID int64) ([]model.OrderItem, error) {
+	var orderItems []model.OrderItem
+	err := o.DB.Find(&orderItems, "order_id = ?", orderID).Error
+	if err != nil {
+		return nil, err
+	}
+	return orderItems, nil
+}
+
+func (o *Order) RemoveOrderItem(orderID int64, itemID int64) error {
+    result := o.DB.Delete(&model.OrderItem{}, "order_id = ? AND id = ?", orderID, itemID)
+    if result.Error != nil {
+        return result.Error
+    }
+    if result.RowsAffected == 0 {
+        return fmt.Errorf("no order item found to delete")
+    }
+    return nil
 }

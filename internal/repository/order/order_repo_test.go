@@ -197,3 +197,91 @@ func TestDeleteOrder(t *testing.T) {
 	assert.Nil(t, deletedOrder)
 
 }
+
+func TestAddOrderItem(t *testing.T) {
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	orderDB := NewOrder(db)
+
+	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
+	orderDB.CreateOrder(order)
+
+	newItem := model.OrderItem{ProductID: 2, Qty: 1, UnitPrice: 50}
+	err := orderDB.AddOrderItem(order.ID, &newItem)
+	assert.NoError(t, err)
+
+	updatedOrder, _ := orderDB.GetOrderByID(order.ID)
+	assert.Len(t, updatedOrder.Items, 2)
+	assert.Equal(t, int64(2), updatedOrder.Items[1].ProductID)
+	assert.Equal(t, 50.0, updatedOrder.Items[1].UnitPrice)
+}
+
+func TestUpdateOrderItem(t *testing.T) {
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	orderDB := NewOrder(db)
+
+	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
+	orderDB.CreateOrder(order)
+
+	newItem := model.OrderItem{ProductID: 2, Qty: 1, UnitPrice: 50.0}
+	err := orderDB.AddOrderItem(order.ID, &newItem)
+	assert.NoError(t, err)
+	assert.Equal(t, 50.0, newItem.UnitPrice)
+
+	newItem.UnitPrice = 35.0
+	newItem.Qty = 5
+
+	err = orderDB.UpdateOrderItem(order.ID, &newItem)
+	assert.NoError(t, err)
+
+	actual, err := orderDB.GetOrderItems(order.ID)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 35.0, actual[1].UnitPrice)
+	assert.Equal(t, 5, actual[1].Qty)
+	assert.Equal(t, int64(2), actual[1].ProductID)
+}
+
+func TestGetOrderItems(t *testing.T) {
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	orderDB := NewOrder(db)
+
+	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
+	orderDB.CreateOrder(order)
+
+	newItem := model.OrderItem{ProductID: 2, Qty: 1, UnitPrice: 50.0}
+	err := orderDB.AddOrderItem(order.ID, &newItem)
+	assert.NoError(t, err)
+
+	orderItems, err := orderDB.GetOrderItems(order.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, 100.00, orderItems[0].UnitPrice)
+	assert.Equal(t, int64(1), orderItems[0].ProductID)
+	assert.Equal(t, 50.00, orderItems[1].UnitPrice)
+	assert.Equal(t, int64(2), orderItems[1].ProductID)
+}
+
+func TestRemoveOrderItem(t *testing.T) {
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	orderDB := NewOrder(db)
+
+	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
+	orderDB.CreateOrder(order)
+
+	newItem := model.OrderItem{ProductID: 2, Qty: 1, UnitPrice: 50.0}
+	err := orderDB.AddOrderItem(order.ID, &newItem)
+	assert.NoError(t, err)
+
+	// Remove the item
+	err = orderDB.RemoveOrderItem(order.ID, newItem.ID)
+	assert.NoError(t, err)
+
+	// Verify the item is removed
+	items, err := orderDB.GetOrderItems(order.ID)
+	assert.NoError(t, err)
+	assert.Len(t, items, 1)
+	assert.Equal(t, int64(1), items[0].ProductID)
+
+	// Try removing a non-existent item
+	err = orderDB.RemoveOrderItem(order.ID, 9999)
+	assert.Error(t, err)
+}
