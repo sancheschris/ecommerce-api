@@ -13,5 +13,5 @@ type OrderInterface interface {
 	AddOrderItem(orderID int64, item *model.OrderItem) error
 	UpdateOrderItem(orderID int64, item *model.OrderItem) error
 	RemoveOrderItem(orderID int64, itemID int64) error
-	GetOrderItems(orderID int64) ([]model.Order, error)
+	GetOrderItems(orderID int64) ([]model.OrderItem, error)
 }
