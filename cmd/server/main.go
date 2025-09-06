@@ -45,6 +45,7 @@ func main() {
 	
 	r.Post("/users", userHandler.Create)
 	r.Post("/users/generate_token", userHandler.GetJWT)
+	r.Get("/users/orders", userHandler.GetOrders)
 
 	r.Post("/products", productHandler.Create)
 	r.Get("/products/{id}", productHandler.GetProductByID)
@@ -53,6 +54,7 @@ func main() {
 	r.Delete("/products/{id}", productHandler.DeleteProduct)
 
 	r.Post("/orders", orderHandler.CreateOrder)
+	r.Get("/orders", orderHandler.GetOrders)
 
 	http.ListenAndServe(":8080", r)
 }

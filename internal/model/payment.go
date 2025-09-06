@@ -3,9 +3,9 @@ package model
 import "time"
 
 type Payment struct {
-    ID        int64      `gorm:"primaryKey" json:"id"`
-    OrderID   int64      `json:"orderId"`
-    Order     Order     `gorm:"foreignKey:OrderID"`
+    ID        int      `gorm:"primaryKey" json:"id"`
+    OrderID   int      `json:"orderId"`
+    Order     Order     `gorm:"foreignKey:OrderID" json:"-"`
     Provider  string    `json:"provider"` // e.g. "stripe"
     AmountCents float64     `json:"amountCents"`
     Method string `json:"method"`

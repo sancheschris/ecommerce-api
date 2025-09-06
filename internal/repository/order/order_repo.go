@@ -21,7 +21,7 @@ func (o *Order) CreateOrder(order *model.Order) error {
 
 func (o *Order) GetOrders() ([]model.Order, error) {
 	var orders []model.Order
-	err := o.DB.Preload("Items").Preload("Payments").Find(&orders).Error
+	err := o.DB.Preload("User").Preload("Items").Preload("Items.Product").Preload("Payments").Preload("Payments.Order").Find(&orders).Error
 	if err != nil {
 		return nil, err
 	}

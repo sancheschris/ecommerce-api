@@ -19,8 +19,8 @@ func NewOrderHandler(orderDB repo.OrderInterface) *OrderHandler {
 	}
 }
 
-func (h OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	var orderRequest dto.OrderRequest
+func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
+	var orderRequest dto.OrderDTO
 	err := json.NewDecoder(r.Body).Decode(&orderRequest)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
@@ -40,6 +40,30 @@ func (h OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error creating order", http.StatusInternalServerError)
 		return
 	}
+
+	savedOrder, err := h.OrderDB.GetOrderByID(o.ID)
+	if err != nil {
+        http.Error(w, "Error fetching created order", http.StatusInternalServerError)
+        return
+    }
+
+	orderDTO := dto.ToOrderDTO(savedOrder)
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(&orderRequest)
+	json.NewEncoder(w).Encode(orderDTO)
+}
+
+func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
+	orders, err := h.OrderDB.GetOrders()
+	if err != nil {
+		http.Error(w, "Error to return orders", http.StatusInternalServerError)
+		return
+	}
+	ordersDTO := make([]dto.OrderDTO, len(orders))
+	for i, o := range orders {
+		ordersDTO[i] = dto.ToOrderDTO(&o)
+	}
+	json.NewEncoder(w).Encode(&orders)
+	w.WriteHeader(http.StatusOK)
 }

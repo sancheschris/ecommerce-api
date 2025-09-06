@@ -7,8 +7,8 @@ import (
 
 type Order struct {
 	ID int `json:"id" gorm:"primaryKey"`
-	UserID int `json:"userId"`
-	User User `gorm:"foreignKey:UserID"`
+	UserID int `json:"user_id"`
+	User User `gorm:"foreignKey:UserID" json:"-"`
 	Status string `json:"status"`
 	TotalPrice float64 `json:"total_price"`
 	Currency string `json:"currency"`
