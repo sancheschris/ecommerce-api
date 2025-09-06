@@ -6,8 +6,8 @@ import (
 )
 
 type Order struct {
-	ID int64 `json:"id" gorm:"primaryKey"`
-	UserID int64 `json:"userId"`
+	ID int `json:"id" gorm:"primaryKey"`
+	UserID int `json:"userId"`
 	User User `gorm:"foreignKey:UserID"`
 	Status string `json:"status"`
 	TotalPrice float64 `json:"total_price"`
@@ -19,7 +19,7 @@ type Order struct {
 }
 
 func NewOrder(
-    userID int64,
+    userID int,
     items []OrderItem,
     status string,
     totalPrice float64,

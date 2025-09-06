@@ -8,6 +8,7 @@ import (
 	"github.com/sancheschris/ecommerce-api/configs"
 	"github.com/sancheschris/ecommerce-api/internal/handler"
 	"github.com/sancheschris/ecommerce-api/internal/model"
+	orderRepo "github.com/sancheschris/ecommerce-api/internal/repository/order"
 	productRepo "github.com/sancheschris/ecommerce-api/internal/repository/product"
 	userRepo "github.com/sancheschris/ecommerce-api/internal/repository/user"
 	"gorm.io/driver/sqlite"
@@ -34,6 +35,9 @@ func main() {
 	productDB := productRepo.NewProduct(db)
 	productHandler := handler.NewProductHandler(productDB)
 
+	orderDB := orderRepo.NewOrder(db)
+	orderHandler := handler.NewOrderHandler(orderDB)
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.WithValue("jwt", configs.TokenAuth))
@@ -47,6 +51,8 @@ func main() {
 	r.Get("/products", productHandler.GetProducts)
 	r.Put("/products/{id}", productHandler.UpdateProduct)
 	r.Delete("/products/{id}", productHandler.DeleteProduct)
+
+	r.Post("/orders", orderHandler.CreateOrder)
 
 	http.ListenAndServe(":8080", r)
 }

@@ -28,7 +28,7 @@ func (o *Order) GetOrders() ([]model.Order, error) {
 	return orders, err
 }
 
-func (o *Order) GetOrderByID(id int64) (*model.Order, error) {
+func (o *Order) GetOrderByID(id int) (*model.Order, error) {
 	var order model.Order
 	err := o.DB.Preload("Items").First(&order, "id = ?", id).Error
 	if err != nil {
@@ -45,7 +45,7 @@ func (o *Order) UpdateOrder(order *model.Order) error {
 	return o.DB.Save(order).Error
 }
 
-func (o *Order) DeleteOrder(id int64) error {
+func (o *Order) DeleteOrder(id int) error {
 	var order []model.Order
 	err := o.DB.First(&order).Error
 	if err != nil {
@@ -54,7 +54,7 @@ func (o *Order) DeleteOrder(id int64) error {
 	return o.DB.Delete(&order, "id = ?", id).Error
 }
 
-func (o *Order) GetOrdersByUserID(userID int64) ([]model.Order, error) {
+func (o *Order) GetOrdersByUserID(userID int) ([]model.Order, error) {
 	var orders []model.Order
 	err := o.DB.Where("user_id = ?", userID).Find(&orders).Error
 	if err != nil {
@@ -63,12 +63,12 @@ func (o *Order) GetOrdersByUserID(userID int64) ([]model.Order, error) {
 	return orders, nil
 }
 
-func (o *Order) AddOrderItem(orderID int64, item *model.OrderItem) error {
+func (o *Order) AddOrderItem(orderID int, item *model.OrderItem) error {
 	item.OrderID = orderID
 	return o.DB.Create(&item).Error
 }
 
-func (o *Order) UpdateOrderItem(orderID int64, item *model.OrderItem) error {
+func (o *Order) UpdateOrderItem(orderID int, item *model.OrderItem) error {
 	_, err := o.GetOrderByID(orderID)
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func (o *Order) UpdateOrderItem(orderID int64, item *model.OrderItem) error {
 	return o.DB.Save(item).Error
 }
 
-func (o *Order) GetOrderItems(orderID int64) ([]model.OrderItem, error) {
+func (o *Order) GetOrderItems(orderID int) ([]model.OrderItem, error) {
 	var orderItems []model.OrderItem
 	err := o.DB.Find(&orderItems, "order_id = ?", orderID).Error
 	if err != nil {
@@ -88,7 +88,7 @@ func (o *Order) GetOrderItems(orderID int64) ([]model.OrderItem, error) {
 	return orderItems, nil
 }
 
-func (o *Order) RemoveOrderItem(orderID int64, itemID int64) error {
+func (o *Order) RemoveOrderItem(orderID int, itemID int) error {
     result := o.DB.Delete(&model.OrderItem{}, "order_id = ? AND id = ?", orderID, itemID)
     if result.Error != nil {
         return result.Error
