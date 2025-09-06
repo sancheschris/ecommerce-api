@@ -16,7 +16,7 @@ func TestCreateNewOrder(t *testing.T) {
 
 	tests := []struct {
 			name      string
-			userID    int64
+			userID    int
 			items     []model.OrderItem
 			status    string
 			totalPrice float64
@@ -111,7 +111,7 @@ func TestGetOrdersByUserID(t *testing.T) {
 	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
 	orderDB := NewOrder(db)
 
-	userID := int64(1)
+	userID := 1
 
 	order, err := model.NewOrder(userID, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice:  100},
 	},
@@ -129,7 +129,7 @@ func TestGetOrdersByUserID(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, orderByID)
-	assert.Equal(t, int64(1), orderByID[0].UserID)
+	assert.Equal(t, 1, orderByID[0].UserID)
 	assert.Equal(t, order.Status, orderByID[0].Status)
 
 }
@@ -211,7 +211,7 @@ func TestAddOrderItem(t *testing.T) {
 
 	updatedOrder, _ := orderDB.GetOrderByID(order.ID)
 	assert.Len(t, updatedOrder.Items, 2)
-	assert.Equal(t, int64(2), updatedOrder.Items[1].ProductID)
+	assert.Equal(t, 2, updatedOrder.Items[1].ProductID)
 	assert.Equal(t, 50.0, updatedOrder.Items[1].UnitPrice)
 }
 
@@ -238,7 +238,7 @@ func TestUpdateOrderItem(t *testing.T) {
 
 	assert.Equal(t, 35.0, actual[1].UnitPrice)
 	assert.Equal(t, 5, actual[1].Qty)
-	assert.Equal(t, int64(2), actual[1].ProductID)
+	assert.Equal(t, 2, actual[1].ProductID)
 }
 
 func TestGetOrderItems(t *testing.T) {
@@ -255,9 +255,9 @@ func TestGetOrderItems(t *testing.T) {
 	orderItems, err := orderDB.GetOrderItems(order.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, 100.00, orderItems[0].UnitPrice)
-	assert.Equal(t, int64(1), orderItems[0].ProductID)
+	assert.Equal(t, 1, orderItems[0].ProductID)
 	assert.Equal(t, 50.00, orderItems[1].UnitPrice)
-	assert.Equal(t, int64(2), orderItems[1].ProductID)
+	assert.Equal(t, 2, orderItems[1].ProductID)
 }
 
 func TestRemoveOrderItem(t *testing.T) {
@@ -279,7 +279,7 @@ func TestRemoveOrderItem(t *testing.T) {
 	items, err := orderDB.GetOrderItems(order.ID)
 	assert.NoError(t, err)
 	assert.Len(t, items, 1)
-	assert.Equal(t, int64(1), items[0].ProductID)
+	assert.Equal(t, 1, items[0].ProductID)
 
 	// Try removing a non-existent item
 	err = orderDB.RemoveOrderItem(order.ID, 9999)
