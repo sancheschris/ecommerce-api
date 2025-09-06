@@ -10,7 +10,7 @@ type PaymentRequest struct {
     Method   string  `json:"method"`
     Currency string  `json:"currency"`
 	Provider string `json:"provider"`
-	Status string `json:"provider"`
+	Status string `json:"status"`
 }
 
 type OrderRequest struct {

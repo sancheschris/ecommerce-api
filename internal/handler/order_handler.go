@@ -26,25 +26,9 @@ func (h OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return	
 	}
-	items := make([]model.OrderItem, len(orderRequest.Items))
-	for i, item := range orderRequest.Items {
-		items[i] = model.OrderItem{
-			ProductID: item.ProductID,
-			Qty: item.Qty,
-			UnitPrice: item.UnitPrice,
-		}
-	}
 
-	payments := make([]model.Payment, len(orderRequest.Payments))
-	for i, payment := range orderRequest.Payments {
-		payments[i] = model.Payment{
-			Provider: payment.Provider,
-			AmountCents: payment.Amount,
-			Method: payment.Method,
-			Currency: payment.Currency,
-			Status: payment.Status,
-		}
-	}
+	items := dto.ToOrderItems(orderRequest.Items)
+	payments := dto.ToPayments(orderRequest.Payments)
 
 	o, err := model.NewOrder(orderRequest.UserID, items, orderRequest.Status, orderRequest.TotalPrice, orderRequest.Currency, payments)
 	if err != nil {
