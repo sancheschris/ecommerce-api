@@ -86,3 +86,54 @@ func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&order)
 }
+
+func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 0)
+	if err != nil {
+		http.Error(w, "Invalid id", http.StatusBadRequest)
+		return
+	}
+	_, err = h.OrderDB.GetOrderByID(int(id))
+	if err != nil {
+		http.Error(w, "Order not found", http.StatusNotFound)
+		return
+	}
+	var orderReq dto.OrderDTO
+	err = json.NewDecoder(r.Body).Decode(&orderReq)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	
+	items := dto.ToOrderItems(orderReq.Items)
+	payments := dto.ToPayments(orderReq.Payments)
+
+	order := &model.Order{
+		ID: int(id),
+		UserID: orderReq.UserID,
+		Status: orderReq.Status,
+		TotalPrice: orderReq.TotalPrice,
+		Currency: orderReq.Currency,
+		Items: items,
+		Payments: payments,
+	}
+
+	err = h.OrderDB.UpdateOrder(order)
+	if err != nil {
+		http.Error(w, "Error updating order", http.StatusInternalServerError)
+		return
+	}
+
+	updatedOrder, err := h.OrderDB.GetOrderByID(order.ID)
+	if err != nil {
+		http.Error(w, "Cannot return order", http.StatusBadRequest)
+		return
+	}
+
+	orderDTO := dto.ToOrderDTO(updatedOrder)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(orderDTO)
+}

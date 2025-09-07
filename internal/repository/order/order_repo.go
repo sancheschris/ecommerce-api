@@ -38,11 +38,16 @@ func (o *Order) GetOrderByID(id int) (*model.Order, error) {
 }
 
 func (o *Order) UpdateOrder(order *model.Order) error {
-	_, err := o.GetOrderByID(order.ID)
-	if err != nil {
+	if err := o.DB.Model(order).Updates(order).Error; err != nil {
 		return err
 	}
-	return o.DB.Save(order).Error
+	if err := o.DB.Model(order).Association("Items").Replace(order.Items); err != nil {
+		return err
+	}
+	if err := o.DB.Model(order).Association("Payments").Replace(order.Payments); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (o *Order) DeleteOrder(id int) error {

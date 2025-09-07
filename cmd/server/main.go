@@ -56,6 +56,7 @@ func main() {
 	r.Post("/orders", orderHandler.CreateOrder)
 	r.Get("/orders", orderHandler.GetOrders)
 	r.Get("/orders/{id}", orderHandler.GetOrderByID)
+	r.Put("/orders/{id}", orderHandler.UpdateOrder)
 
 	http.ListenAndServe(":8080", r)
 }
