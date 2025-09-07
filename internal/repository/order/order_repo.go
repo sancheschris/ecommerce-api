@@ -21,7 +21,11 @@ func (o *Order) CreateOrder(order *model.Order) error {
 
 func (o *Order) GetOrders() ([]model.Order, error) {
 	var orders []model.Order
-	err := o.DB.Preload("User").Preload("Items").Preload("Items.Product").Preload("Payments").Preload("Payments.Order").Find(&orders).Error
+	err := o.DB.
+		Preload("User").
+		Preload("Items.Product").
+		Preload("Payments").
+		Find(&orders).Error
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +34,11 @@ func (o *Order) GetOrders() ([]model.Order, error) {
 
 func (o *Order) GetOrderByID(id int) (*model.Order, error) {
 	var order model.Order
-	err := o.DB.Preload("Items.Product").Preload("Payments").First(&order, "id = ?", id).Error
+	err := o.DB.
+		Preload("User").
+		Preload("Items.Product").
+		Preload("Payments").
+		First(&order, id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -38,25 +46,41 @@ func (o *Order) GetOrderByID(id int) (*model.Order, error) {
 }
 
 func (o *Order) UpdateOrder(order *model.Order) error {
-	if err := o.DB.Model(order).Updates(order).Error; err != nil {
-		return err
-	}
-	if err := o.DB.Model(order).Association("Items").Replace(order.Items); err != nil {
-		return err
-	}
-	if err := o.DB.Model(order).Association("Payments").Replace(order.Payments); err != nil {
-		return err
-	}
-	return nil
+    return o.DB.Transaction(func(tx *gorm.DB) error {
+        // update only allowed fields (to avoid zero-value issues)
+        if err := tx.Model(&model.Order{ID: order.ID}).Updates(map[string]any{
+            "status":      order.Status,
+            "total_price": order.TotalPrice,
+            "currency":    order.Currency,
+        }).Error; err != nil {
+            return err
+        }
+
+        // replace items/payments if that's desired
+        for i := range order.Items {
+            order.Items[i].OrderID = order.ID
+        }
+        if err := tx.Model(&order).Association("Items").Replace(order.Items); err != nil {
+            return err
+        }
+
+        for i := range order.Payments {
+            order.Payments[i].OrderID = order.ID
+        }
+        if err := tx.Model(&order).Association("Payments").Replace(order.Payments); err != nil {
+            return err
+        }
+
+        return nil
+    })
 }
 
 func (o *Order) DeleteOrder(id int) error {
-	var order []model.Order
-	err := o.DB.First(&order).Error
-	if err != nil {
-		return err
-	}
-	return o.DB.Delete(&order, "id = ?", id).Error
+    var order model.Order
+    if err := o.DB.First(&order, id).Error; err != nil {
+        return err
+    }
+    return o.DB.Delete(&order).Error
 }
 
 func (o *Order) GetOrdersByUserID(userID int) ([]model.Order, error) {
@@ -70,18 +94,14 @@ func (o *Order) GetOrdersByUserID(userID int) ([]model.Order, error) {
 
 func (o *Order) AddOrderItem(orderID int, item *model.OrderItem) error {
 	item.OrderID = orderID
-	return o.DB.Create(&item).Error
+	return o.DB.Create(item).Error
 }
 
 func (o *Order) UpdateOrderItem(orderID int, item *model.OrderItem) error {
-	_, err := o.GetOrderByID(orderID)
-	if err != nil {
-		return err
-	}
-	if item.OrderID != orderID {
-		return fmt.Errorf("Order items does not belong to order")
-	}
-	return o.DB.Save(item).Error
+    if item.OrderID != orderID {
+        return fmt.Errorf("order item does not belong to order %d", orderID)
+    }
+    return o.DB.Save(item).Error
 }
 
 func (o *Order) GetOrderItems(orderID int) ([]model.OrderItem, error) {
