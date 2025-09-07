@@ -3,7 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi"
 	"github.com/sancheschris/ecommerce-api/internal/dto"
 	"github.com/sancheschris/ecommerce-api/internal/model"
 	repo "github.com/sancheschris/ecommerce-api/internal/repository/order"
@@ -66,4 +68,21 @@ func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(&orders)
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 0)
+	if err != nil {
+		http.Error(w, "Invalid Id", http.StatusBadRequest)
+		return
+	}
+	order, err := h.OrderDB.GetOrderByID(int(id))
+	if err != nil {
+		http.Error(w, "Canno return order", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Contenty-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&order)
 }

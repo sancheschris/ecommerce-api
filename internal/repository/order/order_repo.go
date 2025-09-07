@@ -30,7 +30,7 @@ func (o *Order) GetOrders() ([]model.Order, error) {
 
 func (o *Order) GetOrderByID(id int) (*model.Order, error) {
 	var order model.Order
-	err := o.DB.Preload("Items").First(&order, "id = ?", id).Error
+	err := o.DB.Preload("Items.Product").Preload("Payments").First(&order, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
