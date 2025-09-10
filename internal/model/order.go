@@ -6,20 +6,20 @@ import (
 )
 
 type Order struct {
-	ID int64 `json:"id" gorm:"primaryKey"`
-	UserID int64 `json:"userId"`
-	User User `gorm:"foreignKey:UserID"`
-	Status string `json:"status"`
-	TotalPrice float64 `json:"total_price"`
-	Currency string `json:"currency"`
-	Items []OrderItem `gorm:"foreignKey:OrderID" json:"items"`
-	Payments []Payment `gorm:"foreignKey:OrderID" json:"payments"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+    ID         int        `gorm:"primaryKey" json:"id"`
+    UserID     int        `json:"user_id"`
+	User 	   *User      `gorm:"foreignKey:UserID" json:"-"`
+    Status     string     `json:"status"`
+    TotalPrice float64    `json:"total_price"`    // consider int64 cents everywhere
+    Currency   string     `json:"currency"`
+    Items      []OrderItem `gorm:"constraint:OnDelete:CASCADE;" json:"items"`
+    Payments   []Payment   `gorm:"constraint:OnDelete:CASCADE;" json:"payments"`
+    CreatedAt  time.Time   `json:"created_at"`
+    UpdatedAt  time.Time   `json:"updated_at"`
 }
 
 func NewOrder(
-    userID int64,
+    userID int,
     items []OrderItem,
     status string,
     totalPrice float64,

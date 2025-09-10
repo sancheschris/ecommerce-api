@@ -1,11 +1,10 @@
 package model
 
 type OrderItem struct {
-	ID int64 `gorm:"primaryKey" json:"id"`
-	OrderID int64 `json:"orderId"`
-	ProductID int64 `json:"productId"`
-	Product Product `gorm:"foreignKey:ProductID"`
-	Qty int `json:"qty"`
-	UnitPrice float64 `json:"unitPrice"`
+    ID         int       `gorm:"primaryKey" json:"id"`
+    OrderID    int       `json:"order_id"`
+    ProductID  int       `json:"product_id"`
+    Product    *Product  `json:"product,omitempty"` 
+    Qty        int       `json:"qty"`
+    UnitPrice  float64   `json:"unit_price"`
 }
-

@@ -25,6 +25,9 @@ func (u *User) FindByEmail(email string) (*model.User, error) {
 
 func (u *User) GetOrders() ([]model.User, error) {
 	var users []model.User
-	err := u.DB.Preload("Orders").Find(&users).Error
+	err := u.DB.
+		Preload("Orders.Items.Product").
+		Preload("Orders.Payments").
+		Find(&users).Error
 	return users, err
 }

@@ -45,6 +45,17 @@ func (h *UserHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
+func (h *UserHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
+	orders, err := h.UserDB.GetOrders()
+	if err != nil {
+		http.Error(w, "Error to return orders", http.StatusNotFound)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(orders)
+}
+
 func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 	jwt := r.Context().Value("jwt").(*jwtauth.JWTAuth)
 	jwtExpiresIn := r.Context().Value("JwtExpiresIn").(int)
