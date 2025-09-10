@@ -108,7 +108,7 @@ func TestGetOrders(t *testing.T) {
 }
 
 func TestGetOrdersByUserID(t *testing.T) {
-	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{}, model.Payment{})
 	orderDB := NewOrder(db)
 
 	userID := 1
@@ -123,19 +123,21 @@ func TestGetOrdersByUserID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, order)
 
-	orderDB.CreateOrder(order)
+	err = orderDB.CreateOrder(order)
+	assert.NoError(t, err)
 
-	orderByID, err := orderDB.GetOrdersByUserID(order.UserID)
+	orders, err := orderDB.GetOrdersByUserID(order.UserID)
 
 	assert.NoError(t, err)
-	assert.NotNil(t, orderByID)
-	assert.Equal(t, 1, orderByID[0].UserID)
-	assert.Equal(t, order.Status, orderByID[0].Status)
+	assert.NotNil(t, orders)
+	assert.Len(t, orders, 1)
+	assert.Equal(t, userID, orders[0].UserID)
+	assert.Equal(t, order.Status, orders[0].Status)
 
 }
 
 func TestGetOrderByID(t *testing.T) {
-	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{}, model.Payment{})
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
@@ -155,7 +157,7 @@ func TestGetOrderByID(t *testing.T) {
 }
 
 func TestUpdateOrder(t *testing.T) {
-	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{}, model.Payment{})
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
@@ -180,7 +182,7 @@ func TestUpdateOrder(t *testing.T) {
 }
 
 func TestDeleteOrder(t *testing.T) {
-	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{}, model.Payment{})
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
@@ -199,7 +201,7 @@ func TestDeleteOrder(t *testing.T) {
 }
 
 func TestAddOrderItem(t *testing.T) {
-	db := repository.SetupTestDB(model.Order{}, model.OrderItem{})
+	db := repository.SetupTestDB(model.Order{}, model.OrderItem{}, model.Payment{})
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
