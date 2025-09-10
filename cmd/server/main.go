@@ -56,6 +56,7 @@ func main() {
 	r.Post("/orders", orderHandler.CreateOrder)
 	r.Get("/orders", orderHandler.GetOrders)
 	r.Get("/orders/{id}", orderHandler.GetOrderByID)
+	r.Get("/users/{id}/orders", orderHandler.GetOrdersByUserID)
 	r.Put("/orders/{id}", orderHandler.UpdateOrder)
 	r.Delete("/orders/{id}", orderHandler.DeleteOrder)
 

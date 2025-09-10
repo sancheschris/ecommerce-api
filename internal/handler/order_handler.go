@@ -160,3 +160,26 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *OrderHandler) GetOrdersByUserID(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 0)
+	if err != nil {
+		http.Error(w, "Invalid Id", http.StatusBadRequest)
+		return
+	}
+	ordersByUser, err := h.OrderDB.GetOrdersByUserID(int(id))
+	if err != nil {
+		http.Error(w, "Cannot get orders by user id", http.StatusNotFound)
+		return
+	}
+
+	ordersDTO := make([]dto.OrderDTO, len(ordersByUser))
+	for i, o := range ordersByUser {
+		ordersDTO[i] = dto.ToOrderDTO(&o)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(ordersDTO)
+}

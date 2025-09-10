@@ -84,12 +84,17 @@ func (o *Order) DeleteOrder(id int) error {
 }
 
 func (o *Order) GetOrdersByUserID(userID int) ([]model.Order, error) {
-	var orders []model.Order
-	err := o.DB.Where("user_id = ?", userID).Find(&orders).Error
-	if err != nil {
-		return nil, err
-	}
-	return orders, nil
+    var orders []model.Order
+    err := o.DB.
+        Preload("User").
+        Preload("Items.Product").
+        Preload("Payments").
+        Where("user_id = ?", userID).
+        Find(&orders).Error
+    if err != nil {
+        return nil, err
+    }
+    return orders, nil
 }
 
 func (o *Order) AddOrderItem(orderID int, item *model.OrderItem) error {
