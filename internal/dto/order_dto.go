@@ -22,7 +22,7 @@ type PaymentDTO struct {
     ID          int     `json:"id"`
     OrderID     int     `json:"order_id"`
     Provider    string  `json:"provider"`
-    AmountCents float64 `json:"amount_cents"`
+    Amount      float64 `json:"amount"`
     Method      string  `json:"method"`
     Currency    string  `json:"currency"`
     Status      string  `json:"status"`

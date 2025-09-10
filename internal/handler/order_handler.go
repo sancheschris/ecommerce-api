@@ -137,3 +137,26 @@ func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(orderDTO)
 }
+
+func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 0)
+	if err != nil {
+		http.Error(w, "Invalid Id", http.StatusBadRequest)
+		return
+	}
+
+	_, err = h.OrderDB.GetOrderByID(int(id))
+	if err != nil {
+		http.Error(w, "Order not found", http.StatusNotFound)
+		return
+	}
+
+	err = h.OrderDB.DeleteOrder(int(id))
+	if err != nil {
+		http.Error(w, "Order cannot be delete", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

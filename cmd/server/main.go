@@ -57,6 +57,7 @@ func main() {
 	r.Get("/orders", orderHandler.GetOrders)
 	r.Get("/orders/{id}", orderHandler.GetOrderByID)
 	r.Put("/orders/{id}", orderHandler.UpdateOrder)
+	r.Delete("/orders/{id}", orderHandler.DeleteOrder)
 
 	http.ListenAndServe(":8080", r)
 }
