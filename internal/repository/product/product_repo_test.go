@@ -4,17 +4,12 @@ import (
 	"testing"
 
 	"github.com/sancheschris/ecommerce-api/internal/model"
+	"github.com/sancheschris/ecommerce-api/internal/repository"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func TestNewProduct(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
-	if err != nil {
-		t.Error(err)
-	}
-	db.AutoMigrate(&model.Product{})
+	db := repository.SetupTestDB(model.Product{})
 	productDB := NewProduct(db)
 
 	tests := []struct {
@@ -44,11 +39,8 @@ func TestNewProduct(t *testing.T) {
 }
 
 func TestGetProductByID(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
-	if err != nil {
-		t.Error(err)
-	}
-	db.AutoMigrate(&model.Product{})
+	db := repository.SetupTestDB(model.Product{})
+	productDB := NewProduct(db)
 
 	product, err := model.NewProduct("Macbook M4 Pro", 26000.00, true)
 	assert.NoError(t, err)
@@ -56,25 +48,19 @@ func TestGetProductByID(t *testing.T) {
 
 	db.Create(product)
 
-	productDB := NewProduct(db)
 	product, err = productDB.GetProductByID(product.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, "Macbook M4 Pro", product.Name)
 }
 
 func TestGetProductByIdTable(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
-	if err != nil {
-		t.Error(err)
-	}
-	db.AutoMigrate(&model.Product{})
+	db := repository.SetupTestDB(model.Product{})
+	productDB := NewProduct(db)
 
 	product1, _ := model.NewProduct("Macbook M4 Pro", 26000.00, true)
     db.Create(product1)
     product2, _ := model.NewProduct("Iphone 16", 8900.00, true)
     db.Create(product2)
-
-    productDB := NewProduct(db)
 
 	tests := []struct {
     name     string
@@ -105,19 +91,14 @@ for _, tt := range tests {
 }
 
 func TestGetProducts(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
-	if err != nil {
-		t.Error(err)
-	}
-	db.AutoMigrate(&model.Product{})
+	db := repository.SetupTestDB(model.Product{})
+	productDB := NewProduct(db)
 
 	p1, _ := model.NewProduct("Tablet", 3500.00, true)
 	p2, _ := model.NewProduct("TV", 5400.00, true)
 
 	db.Create(p1)
 	db.Create(p2)
-
-	productDB := NewProduct(db)
 
 	products, err := productDB.GetProducts()
 	assert.NoError(t, err)
@@ -130,17 +111,13 @@ func TestGetProducts(t *testing.T) {
 }
 
 func TestDeleteProducts(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
-	if err != nil {
-		t.Error(err)
-	}
-	db.AutoMigrate(&model.Product{})
+	db := repository.SetupTestDB(model.Product{})
+	productDB := NewProduct(db)
 
 	p1, _ := model.NewProduct("Tablet", 3500.00, true)
 	db.Create(p1)
-	productDB := NewProduct(db)
 
-	err = productDB.Delete(p1.ID)
+	err := productDB.Delete(p1.ID)
 	assert.NoError(t, err)
 
 	product, err := productDB.GetProductByID(p1.ID)
@@ -149,16 +126,11 @@ func TestDeleteProducts(t *testing.T) {
 }
 
 func TestUpdateProduct(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file:memory:"), &gorm.Config{})
-	if err != nil {
-		t.Error(err)
-	}
-	db.AutoMigrate(&model.Product{})
+	db := repository.SetupTestDB(model.Product{})
+	productDB := NewProduct(db)
 
 	p1, _ := model.NewProduct("Iphone 15", 3600.00, true)
 	db.Create(p1)
-
-	productDB := NewProduct(db)
 	
 	currentProduct, err := productDB.GetProductByID(p1.ID)
 	assert.NoError(t, err)
