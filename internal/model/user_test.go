@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/bcrypt"
 )
 
 
@@ -13,8 +14,12 @@ func TestNewUser(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if u.Name != "Edson" || u.Email != "ed@gmail.com" || u.Password != "123456" {
+	if u.Name != "Edson" || u.Email != "ed@gmail.com" {
 		t.Fatalf("fields not set correctly: %+v", u)
+	}
+	// Verify password was hashed correctly
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte("123456")); err != nil {
+		t.Fatalf("password not hashed correctly: %v", err)
 	}
 }
 
@@ -65,8 +70,14 @@ func TestNewUserTableDriven(t *testing.T) {
 				if u == nil {
 					t.Errorf("got nil user on sucess")
 				}
-				if u != nil && (u.Name != tt.name || u.Email != tt.email || u.Password != tt.password) {
+				if u != nil && (u.Name != tt.name || u.Email != tt.email) {
 					t.Errorf("fields not set correctly: %+v", u)
+				}
+				// Verify password was hashed correctly
+				if u != nil {
+					if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(tt.password)); err != nil {
+						t.Errorf("password not hashed correctly: %v", err)
+					}
 				}
 				return
 			}
