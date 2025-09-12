@@ -27,11 +27,13 @@ func NewUser(name, email, password string) (*User, error) {
 	if err != nil {
 		return nil, err
 	}   
+	now := time.Now()
 	newUser := &User{
 	       Name:      name,
 	       Email:     email,
 	       Password:  string(hash),
-	       CreatedAt: time.Now(),
+	       CreatedAt: now,
+	       UpdatedAt: now,
 	       Orders:    []Order{},
        }
 	err = newUser.Validate()
