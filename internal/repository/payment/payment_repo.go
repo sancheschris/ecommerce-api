@@ -41,3 +41,12 @@ func (p *Payment) Delete(id int) error {
 	}
 	return p.DB.Delete(payment).Error
 }
+
+func (p *Payment) GetByOrderID(orderID int) (*model.Payment, error) {
+	var payment model.Payment
+	err := p.DB.Preload("Order").First(&payment, "order_id = ?", orderID).Error
+	if err != nil {
+		return nil, err
+	}
+	return &payment, nil
+}

@@ -320,3 +320,56 @@ func TestDelete_ValidPayment_DeletesSuccessfully(t *testing.T) {
 	assert.Nil(t, deletedPayment)
 }
 
+func TestGetByOrderID_ValidOrderID_ReturnsPaymentSuccessfully(t *testing.T) {
+	db := repository.SetupTestDB(model.Payment{})
+	paymentDB := NewPayment(db)
+
+	payment, err := model.NewPayment(1, "stripe", "credit_card", "CAD", "pending", 3189)
+	assert.NoError(t, err)
+	err = paymentDB.Create(payment)
+	assert.NoError(t, err)
+
+	result, err := paymentDB.GetByOrderID(payment.OrderID)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	
+	// Detailed validation
+	assert.Equal(t, payment.OrderID, result.OrderID)
+	assert.Equal(t, "CAD", result.Currency)
+	assert.Equal(t, "stripe", result.Provider)
+	assert.Equal(t, int64(3189), result.AmountCents)
+	assert.Equal(t, "pending", result.Status)
+	assert.Equal(t, "credit_card", result.Method)
+}
+
+func TestGetByOrderID_InvalidOrderID_ReturnsError(t *testing.T) {
+	db := repository.SetupTestDB(model.Payment{}, model.Order{})
+	paymentDB := NewPayment(db)
+
+	tests := []struct{
+		name string
+		orderID int
+	}{
+		{
+			name: "Zero Order ID",
+			orderID: 0,
+		},
+		{
+			name: "Non-existent Order ID",
+			orderID: 9999,
+		},
+		{
+			name: "Negative Order ID",
+			orderID: -1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := paymentDB.GetByOrderID(tt.orderID)
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+		})
+	}
+}
