@@ -50,3 +50,14 @@ func (p *Payment) GetByOrderID(orderID int) (*model.Payment, error) {
 	}
 	return &payment, nil
 }
+
+func (p *Payment) GetByUserID(userID int) (*model.Payment, error) {
+	var payment model.Payment
+	err := p.DB.Preload("Order").Joins("JOIN orders ON payments.order_id = orders.id").
+		Where("orders.user_id = ?", userID).
+		First(&payment).Error
+	if err != nil {
+		return nil, err
+	}
+	return &payment, nil
+}

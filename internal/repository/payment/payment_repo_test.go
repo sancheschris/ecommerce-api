@@ -373,3 +373,39 @@ func TestGetByOrderID_InvalidOrderID_ReturnsError(t *testing.T) {
 		})
 	}
 }
+
+func TestGetByUserID_ValidUserID_ReturnsPaymentSuccessfully(t *testing.T) {
+	db := repository.SetupTestDB(model.Payment{}, model.Order{}, model.OrderItem{})
+	paymentDB := NewPayment(db)
+
+	// First create an order with a specific user ID
+	orderItems := []model.OrderItem{
+		{ProductID: 1, Qty: 2, UnitPrice: 15.99},
+	}
+	order, err := model.NewOrder(123, orderItems, "pending", 31.98, "CAD", []model.Payment{})
+	assert.NoError(t, err)
+	
+	// Save the order to the database
+	err = db.Create(order).Error
+	assert.NoError(t, err)
+
+	// Now create a payment that references this order
+	payment, err := model.NewPayment(order.ID, "stripe", "credit_card", "CAD", "pending", 3189)
+	assert.NoError(t, err)
+
+	err = paymentDB.Create(payment)
+	assert.NoError(t, err)
+
+	// Test GetByUserID using the order's user ID
+	result, err := paymentDB.GetByUserID(order.UserID)
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	
+	// Verify the payment and order data
+	assert.Equal(t, payment.ID, result.ID)
+	assert.Equal(t, order.ID, result.OrderID)
+	assert.Equal(t, order.UserID, result.Order.UserID)
+	assert.Equal(t, "CAD", result.Currency)
+	assert.Equal(t, "stripe", result.Provider)
+	assert.Equal(t, int64(3189), result.AmountCents)
+}
