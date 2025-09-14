@@ -441,3 +441,87 @@ func TestGetByUserID_InvalidUserID_ReturnsError(t *testing.T) {
 		})
 	}
 }
+
+func TestGetByStatus_ValidStatus_ReturnsPaymentsSuccessfully(t *testing.T) {
+	db := repository.SetupTestDB(model.Payment{}, model.Order{}, model.OrderItem{})
+	paymentDB := NewPayment(db)
+
+	orderItems := []model.OrderItem{
+		{ProductID: 1, Qty: 2, UnitPrice: 31.89},
+	}
+	order, err := model.NewOrder(1, orderItems, "succeeded", 31.89, "CAD", []model.Payment{})
+	assert.NoError(t, err)
+	
+	err = db.Create(order).Error
+	assert.NoError(t, err)
+
+	payment1, err := model.NewPayment(order.ID, "stripe", "credit_card", "CAD", "succeeded", 3189)
+	assert.NoError(t, err)
+	err = paymentDB.Create(payment1)
+	assert.NoError(t, err)
+
+	payment2, err := model.NewPayment(order.ID, "stripe", "credit_card", "CAD", "succeeded", 2500)
+	assert.NoError(t, err)
+	err = paymentDB.Create(payment2)
+	assert.NoError(t, err)
+
+	payment3, err := model.NewPayment(order.ID, "stripe", "credit_card", "CAD", "canceled", 2500)
+	assert.NoError(t, err)
+	err = paymentDB.Create(payment3)
+	assert.NoError(t, err)
+
+	// Act && Assert
+	result, err := paymentDB.GetByStatus("succeeded")
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Len(t, result, 2)
+	
+	// Verify the payments have the correct status
+	for _, payment := range result {
+		assert.Equal(t, "succeeded", payment.Status)
+		assert.Equal(t, "stripe", payment.Provider)
+		assert.Equal(t, "CAD", payment.Currency)
+	}
+}
+
+func TestGetByStatus_InvalidStatus_ReturnsEmptySlice(t *testing.T) {
+	db := repository.SetupTestDB(model.Payment{})
+	paymentDB := NewPayment(db)
+
+	tests := []struct {
+		name   string
+		status string
+	}{
+		{
+			name:   "Valid Status But No Payments - pending",
+			status: "pending",
+		},
+		{
+			name:   "Valid Status But No Payments - failed",
+			status: "failed",
+		},
+		{
+			name:   "Valid Status But No Payments - requires_payment_method",
+			status: "requires_payment_method",
+		},
+		{
+			name:   "Valid Status But No Payments - requires_confirmation",
+			status: "requires_confirmation",
+		},
+		{
+			name: "Valid Status - canceled",
+			status: "canceled",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := paymentDB.GetByStatus(tt.status)
+			
+			assert.NoError(t, err)
+			assert.NotNil(t, result)
+			assert.Len(t, result, 0)
+			assert.Empty(t, result) 
+		})
+	}
+}

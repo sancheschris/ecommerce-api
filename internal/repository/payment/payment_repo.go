@@ -61,3 +61,16 @@ func (p *Payment) GetByUserID(userID int) (*model.Payment, error) {
 	}
 	return &payment, nil
 }
+
+func (p *Payment) GetByStatus(status string) ([]*model.Payment, error) { 
+	var payments []model.Payment
+	err := p.DB.Preload("Order").Find(&payments, "status = ?", status).Error
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.Payment, len(payments))
+	for i := range payments {
+		result[i] = &payments[i]
+	}
+	return result, nil
+}
