@@ -409,3 +409,35 @@ func TestGetByUserID_ValidUserID_ReturnsPaymentSuccessfully(t *testing.T) {
 	assert.Equal(t, "stripe", result.Provider)
 	assert.Equal(t, int64(3189), result.AmountCents)
 }
+
+func TestGetByUserID_InvalidUserID_ReturnsError(t *testing.T) {
+	db := repository.SetupTestDB(model.Payment{}, model.Order{})
+	paymentDB := NewPayment(db)
+
+	tests := []struct{
+		name string
+		userID int
+	}{
+		{
+			name: "Zero User ID",
+			userID: 0,
+		},
+		{
+			name: "Non-existent User ID",
+			userID: 9999,
+		},
+		{
+			name: "Negative User ID",
+			userID: -1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := paymentDB.GetByUserID(tt.userID)
+
+			assert.Error(t, err)
+			assert.Nil(t, result)
+		})
+	}
+}
