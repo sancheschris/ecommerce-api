@@ -9,6 +9,18 @@ definitions:
       password:
         type: string
     type: object
+  dto.GetJWTRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.GetJWTResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
   dto.ProductRequest:
     properties:
       active:
@@ -85,6 +97,36 @@ paths:
           schema:
             $ref: '#/definitions/handler.Error'
       summary: Create user
+      tags:
+      - users
+  /users/generate_token:
+    post:
+      consumes:
+      - application/json
+      description: Get a user JWT
+      parameters:
+      - description: user credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.GetJWTRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.GetJWTResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Get a user JWT
       tags:
       - users
 securityDefinitions:
