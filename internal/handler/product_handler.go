@@ -29,6 +29,7 @@ func NewProductHandler(productDB repo.ProductInterface) *ProductHandler {
 // @Produce json
 // @Param request body dto.ProductRequest true "product request"
 // @Success 201
+// @Failure 400 {object} Error
 // @Failure 500 {object} Error
 // @Router /products [post]
 // @Security ApiKeyAuth
@@ -53,6 +54,19 @@ func (h *ProductHandler) Create(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&product)
 }
 
+// GetProductId godoc
+// @Summary Get a product
+// @Description Get a product
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param id path string true "product ID" format(string)
+// @Success 200 {object} model.Product
+// @Failure 404 {object} Error
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /products/{id} [get]
+// @Security ApiKeyAuth
 func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -70,6 +84,17 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(product)
 }
 
+// ListAccounts godoc
+// @Summary List products
+// @Description get all products
+// @Tags products
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.Product
+// @Failure 404 {object} Error
+// @Failure 500 {object} Error
+// @Router /products [get]
+// @Security ApiKeyAuth
 func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	products, err := h.ProductDB.GetProducts()
 	if err != nil {
@@ -117,6 +142,19 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(product)
 }
 
+// DeleteProduct godoc
+// @Summary Delete a product
+// @Description Delete a product
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param id path string true "product ID" format(string)
+// @Success 204
+// @Failure 404 {object} Error
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /products/{id} [delete]
+// @Security ApiKeyAuth
 func (h *ProductHandler) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
