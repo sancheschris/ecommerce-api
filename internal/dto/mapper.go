@@ -25,7 +25,7 @@ func ToPayments(reqPayments []PaymentDTO) []model.Payment {
 		payments[i] = model.Payment{
 			ID:          payment.ID,  
 			Provider:    payment.Provider,
-			AmountCents: payment.Amount,
+			AmountCents: int64(payment.Amount),
 			Method:      payment.Method,
 			Currency:    payment.Currency,
 			Status:      payment.Status,
@@ -65,7 +65,7 @@ func ToOrderDTO(order *model.Order) OrderDTO {
 			ID:          p.ID,
 			OrderID:     p.OrderID,
 			Provider:    p.Provider,
-			Amount: p.AmountCents,
+			Amount: float64(p.AmountCents),
 			Method:      p.Method,
 			Currency:    p.Currency,
 			Status:      p.Status,
