@@ -6,15 +6,34 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/sancheschris/ecommerce-api/configs"
+	_ "github.com/sancheschris/ecommerce-api/docs"
 	"github.com/sancheschris/ecommerce-api/internal/handler"
 	"github.com/sancheschris/ecommerce-api/internal/model"
 	orderRepo "github.com/sancheschris/ecommerce-api/internal/repository/order"
 	productRepo "github.com/sancheschris/ecommerce-api/internal/repository/product"
 	userRepo "github.com/sancheschris/ecommerce-api/internal/repository/user"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
+// @title           Ecommerce API
+// @version         1.0
+// @description     Ecommerce API 
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   Christian Santos
+// @contact.url    https://github.com/sancheschris
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+// @BasePath  /
+// @securityDefinitions.apiKey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	configs, err := configs.LoadConfig(".")
 	if err != nil {
@@ -59,6 +78,8 @@ func main() {
 	r.Get("/users/{id}/orders", orderHandler.GetOrdersByUserID)
 	r.Put("/orders/{id}", orderHandler.UpdateOrder)
 	r.Delete("/orders/{id}", orderHandler.DeleteOrder)
+
+	r.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/docs/doc.json")))
 
 	http.ListenAndServe(":8080", r)
 }
