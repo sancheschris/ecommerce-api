@@ -1,4 +1,28 @@
 basePath: /
+definitions:
+  dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  dto.ProductRequest:
+    properties:
+      active:
+        type: boolean
+      name:
+        type: string
+      price:
+        type: number
+    type: object
+  handler.Error:
+    properties:
+      message:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -12,7 +36,57 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Ecommerce API
   version: "1.0"
-paths: {}
+paths:
+  /products:
+    post:
+      consumes:
+      - application/json
+      description: Create products
+      parameters:
+      - description: product request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ProductRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create product
+      tags:
+      - products
+  /users:
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      parameters:
+      - description: user request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      summary: Create user
+      tags:
+      - users
 securityDefinitions:
   ApiKeyAuth:
     in: header
