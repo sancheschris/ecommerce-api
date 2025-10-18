@@ -84,7 +84,7 @@ func (h *ProductHandler) GetProductByID(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(product)
 }
 
-// ListAccounts godoc
+// ListProducts godoc
 // @Summary List products
 // @Description get all products
 // @Tags products
@@ -106,6 +106,20 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(products)
 }
 
+// UpdateProduct godoc
+// @Summary Update product
+// @Description Update product
+// @Tags products
+// @Accept json
+// @Produce json
+// @Param id path string true "product ID" format(string)
+// @Param request body dto.ProductRequest true "product request"
+// @Success 204
+// @Failure 404 {object} Error
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /products/{id} [put]
+// @Security ApiKeyAuth
 func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 64)
@@ -143,8 +157,8 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteProduct godoc
-// @Summary Delete a product
-// @Description Delete a product
+// @Summary Delete product
+// @Description Delete product
 // @Tags products
 // @Accept json
 // @Produce json

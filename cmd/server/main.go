@@ -19,7 +19,7 @@ import (
 
 // @title           Ecommerce API
 // @version         1.0
-// @description     Product API with authentication
+// @description     Ecommerce API 
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   Christian Santos

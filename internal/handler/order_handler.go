@@ -21,6 +21,18 @@ func NewOrderHandler(orderDB repo.OrderInterface) *OrderHandler {
 	}
 }
 
+// Create order godoc
+// @Summary Create order
+// @Description Create orders
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param request body dto.OrderDTO true "order request"
+// @Success 201
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /orders [post]
+// @Security ApiKeyAuth
 func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	var orderRequest dto.OrderDTO
 	err := json.NewDecoder(r.Body).Decode(&orderRequest)
@@ -56,6 +68,16 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(orderDTO)
 }
 
+// ListOrders godoc
+// @Summary List orders
+// @Description get all orders
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Success 200 {array} model.Order
+// @Failure 404 {object} Error
+// @Failure 500 {object} Error
+// @Router /orders [get]
 func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	orders, err := h.OrderDB.GetOrders()
 	if err != nil {
@@ -70,6 +92,19 @@ func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// GetOrder godoc
+// @Summary Get order
+// @Description get order by id
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param id path string true "order ID" format(string)
+// @Success 200 {object} model.Order
+// @Faikure 400 {object} Error
+// @Failure 404 {object} Error
+// @Failure 500 {object} Error
+// @Router /orders/{id} [get]
+// @Security ApiKeyAuth
 func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 0)
@@ -87,6 +122,20 @@ func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&order)
 }
 
+// UpdateOrder godoc
+// @Summary Update order
+// @Description Update order
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param id path string true "order ID" format(string)
+// @Param request body dto.OrderDTO true "order request"
+// @Success 204 {object} dto.OrderDTO
+// @Failure 404 {object} Error
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /orders/{id} [put]
+// @Security ApiKeyAuth
 func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 0)
@@ -138,6 +187,19 @@ func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(orderDTO)
 }
 
+// DeleteOrder godoc
+// @Summary Delete order
+// @Description delete order by id
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param id path string true "order ID" format(string)
+// @Success 204
+// @Faikure 400 {object} Error
+// @Failure 404 {object} Error
+// @Failure 500 {object} Error
+// @Router /orders [delete]
+// @Security ApiKeyAuth
 func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 0)
@@ -161,6 +223,19 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// GetOrderByUserID godoc
+// @Summary Get orders by user id
+// @Description get orders by user id
+// @Tags orders
+// @Accept json
+// @Produce json
+// @Param id path string true "order ID" format(string)
+// @Success 200 {object} dto.OrderDTO
+// @Faikure 400 {object} Error
+// @Failure 404 {object} Error
+// @Failure 500 {object} Error
+// @Router /orders [get]
+// @Security ApiKeyAuth
 func (h *OrderHandler) GetOrdersByUserID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.ParseInt(idStr, 10, 0)
