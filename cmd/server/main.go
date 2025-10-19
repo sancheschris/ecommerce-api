@@ -80,6 +80,3 @@ func main() {
 	r.Delete("/orders/{id}", orderHandler.DeleteOrder)
 
 	r.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/docs/doc.json")))
-
-	http.ListenAndServe(":8080", r)
-}

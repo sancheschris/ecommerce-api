@@ -106,9 +106,50 @@ definitions:
       price:
         type: number
     type: object
+  handler.CreateCustomerRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+    type: object
+  handler.CreatePaymentRequest:
+    properties:
+      amount:
+        type: integer
+      currency:
+        type: string
+      customer_id:
+        type: string
+      order_id:
+        type: integer
+      payment_method:
+        type: string
+    type: object
   handler.Error:
     properties:
       message:
+        type: string
+    type: object
+  handler.PaymentResponse:
+    properties:
+      amount_cents:
+        type: integer
+      client_secret:
+        type: string
+      currency:
+        type: string
+      id:
+        type: integer
+      method:
+        type: string
+      order_id:
+        type: integer
+      provider:
+        type: string
+      status:
+        type: string
+      stripe_payment_intent_id:
         type: string
     type: object
   model.Order:
@@ -155,10 +196,15 @@ definitions:
   model.Payment:
     properties:
       amount_cents:
-        type: number
+        description: Changed to int64 for Stripe compatibility
+        type: integer
       created_at:
         type: string
       currency:
+        type: string
+      failure_code:
+        type: string
+      failure_reason:
         type: string
       id:
         type: integer
@@ -166,15 +212,19 @@ definitions:
         type: string
       order_id:
         type: integer
+      processed_at:
+        type: string
       provider:
         description: e.g. "stripe"
         type: string
       status:
-        description: pending, succeeded, failed
+        description: pending, succeeded, failed, canceled
         type: string
-      stripeChargeId:
+      stripe_charge_id:
         type: string
-      stripePaymentIntentId:
+      stripe_customer_id:
+        type: string
+      stripe_payment_intent_id:
         type: string
       updated_at:
         type: string
@@ -208,6 +258,39 @@ info:
   title: Ecommerce API
   version: "1.0"
 paths:
+  /customers:
+    post:
+      consumes:
+      - application/json
+      description: Create a new customer in Stripe
+      parameters:
+      - description: Customer request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateCustomerRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a Stripe customer
+      tags:
+      - payments
   /orders:
     delete:
       consumes:
@@ -371,6 +454,112 @@ paths:
       summary: Update order
       tags:
       - orders
+  /payments:
+    post:
+      consumes:
+      - application/json
+      description: Create a new payment and process it with Stripe
+      parameters:
+      - description: Payment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreatePaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a payment
+      tags:
+      - payments
+  /payments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get payment details by ID
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a payment
+      tags:
+      - payments
+  /payments/{id}/confirm:
+    post:
+      consumes:
+      - application/json
+      description: Confirm a payment with Stripe
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Confirmation request with payment_method_id
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.PaymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Confirm a payment
+      tags:
+      - payments
   /products:
     get:
       consumes:
