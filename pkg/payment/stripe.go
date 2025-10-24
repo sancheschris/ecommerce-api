@@ -8,7 +8,7 @@ import (
 type PaymentClient interface {
 	CreatePaymentIntent(amount int64, currency string) (*stripe.PaymentIntent, error)
 	ConfirmPaymentIntent(paymentIntentID string) (*stripe.PaymentIntent, error)
-	GetPaymentIntentStatus(paymentIntentID string) (string, error)
+    GetPaymentIntentStatus(paymentIntentID string) (*stripe.PaymentIntent, error) 
 	CreateCustomer(email, name string) (*stripe.Customer, error)
 }
 

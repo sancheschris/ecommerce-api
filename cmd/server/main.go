@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -10,8 +11,11 @@ import (
 	"github.com/sancheschris/ecommerce-api/internal/handler"
 	"github.com/sancheschris/ecommerce-api/internal/model"
 	orderRepo "github.com/sancheschris/ecommerce-api/internal/repository/order"
+	paymentRepo "github.com/sancheschris/ecommerce-api/internal/repository/payment"
 	productRepo "github.com/sancheschris/ecommerce-api/internal/repository/product"
 	userRepo "github.com/sancheschris/ecommerce-api/internal/repository/user"
+	"github.com/sancheschris/ecommerce-api/internal/service"
+	"github.com/sancheschris/ecommerce-api/pkg/payment"
 	httpSwagger "github.com/swaggo/http-swagger"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -19,7 +23,7 @@ import (
 
 // @title           Ecommerce API
 // @version         1.0
-// @description     Ecommerce API 
+// @description     Ecommerce API
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   Christian Santos
@@ -57,6 +61,16 @@ func main() {
 	orderDB := orderRepo.NewOrder(db)
 	orderHandler := handler.NewOrderHandler(orderDB)
 
+if configs.StripeSecretKey == "" {
+        log.Fatal("STRIPE_SECRET_KEY configuration is required")
+    }
+
+	stripeClient := payment.NewStripeClient(configs.StripeSecretKey)
+
+	paymentRepo := paymentRepo.NewPayment(db)
+	paymentService := service.NewPaymentService(paymentRepo, stripeClient)
+	paymentHandler := handler.NewPaymentHandler(paymentService)
+
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(middleware.WithValue("jwt", configs.TokenAuth))
@@ -78,6 +92,9 @@ func main() {
 	r.Get("/users/{id}/orders", orderHandler.GetOrdersByUserID)
 	r.Put("/orders/{id}", orderHandler.UpdateOrder)
 	r.Delete("/orders/{id}", orderHandler.DeleteOrder)
+
+	r.Post("/payments", paymentHandler.CreatePayment)
+	r.Get("/payments/{id}/status", paymentHandler.GetPaymentStatus)
 
 	r.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/docs/doc.json")))
 

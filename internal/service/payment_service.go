@@ -56,13 +56,14 @@ func (p *PaymentService) UpdatePaymentStatus(paymentID int) (*model.Payment, err
 	}
 
 	// update database if status changed
-	if payment.Status != intent {
-		payment.Status = intent
-		if err := p.paymentRepo.Update(payment); err != nil {
-			return nil, fmt.Errorf("failed to update payment status: %w", err)
-		}
-	}
-	return payment, nil
+	 newStatus := string(intent.Status)
+    if payment.Status != newStatus {
+        payment.Status = newStatus
+        if err := p.paymentRepo.Update(payment); err != nil {
+            return nil, fmt.Errorf("failed to update payment status: %w", err)
+        }
+    }
+    return payment, nil
 }
 
 func (p *PaymentService) GetPaymentByOrderID(orderID int) (*model.Payment, error) {
