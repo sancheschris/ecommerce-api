@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
 	"github.com/sancheschris/ecommerce-api/internal/dto"
 	"github.com/sancheschris/ecommerce-api/internal/service"
 )
@@ -38,8 +38,13 @@ func (h *PaymentHandler) CreatePayment(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *PaymentHandler) GetPaymentStatus(w http.ResponseWriter, r *http.Request) {
-    vars := mux.Vars(r)
-    paymentID, err := strconv.Atoi(vars["id"])
+   idStr := chi.URLParam(r, "id")
+    if idStr == "" {
+        http.Error(w, "Payment ID is required", http.StatusBadRequest)
+        return
+    }
+
+    paymentID, err := strconv.Atoi(idStr)
     if err != nil {
         http.Error(w, "Invalid payment ID", http.StatusBadRequest)
         return
