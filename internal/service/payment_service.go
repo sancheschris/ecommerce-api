@@ -26,7 +26,6 @@ func (p *PaymentService) CreatePayment(orderID int, amount int64, currency strin
 		return nil, fmt.Errorf("failed to create stripe payment intent: %w", err)
 	}
 
-	// save to database
 	payment := &model.Payment{
 		OrderID: orderID,
 		AmountCents: amount / 100,
