@@ -77,3 +77,82 @@ func TestCreatePayment__StripeError(t *testing.T) {
     mockClient.AssertExpectations(t)
     mockRepo.AssertNotCalled(t, "Create")
 }
+
+func TestCreatePayment_DatabaseError(t *testing.T) {
+    // Arrange
+    mockRepo := &MockPaymentRepo{}
+    mockClient := &MockPaymentClient{}
+    service := NewPaymentService(mockRepo, mockClient)
+
+    orderID := 1
+    amount := int64(2000)
+    currency := "usd"
+    intentID := "pi_test_123456789"
+
+    mockIntent := &stripe.PaymentIntent{
+        ID: intentID,
+        Amount: amount,
+        Currency: stripe.Currency(currency),
+        Status: stripe.PaymentIntentStatusRequiresPaymentMethod,
+    }
+
+    dbError := errors.New("database connection failed")
+    mockClient.On("CreatePaymentIntent", amount, currency).Return(mockIntent, nil)
+    mockRepo.On("Create", mock.AnythingOfType("*model.Payment")).Return(dbError)
+
+    // Act
+    result, err := service.CreatePayment(orderID, amount, currency)
+
+    // Assert
+    assert.Error(t, err)
+    assert.Nil(t, result)
+    assert.Contains(t, err.Error(), "failed to save payment to database")
+    assert.Contains(t, err.Error(), "database connection failed")
+
+    mockClient.AssertExpectations(t)
+    mockRepo.AssertExpectations(t)
+}
+
+func TestCreatePayment_DifferentCurrencies(t *testing.T) {
+    testCases := []struct {
+        name string
+        currency string
+    } {
+        {"USD", "usd"},
+        {"EUR", "eur"},
+        {"GBP", "gbp"},
+    }
+
+    for _, tc := range testCases {
+        t.Run(tc.name, func(t *testing.T) {
+            // Arrange
+            mockRepo := &MockPaymentRepo{}
+            mockClient := &MockPaymentClient{}
+            service := NewPaymentService(mockRepo, mockClient)
+
+             orderID := 1
+            amount := int64(1500)
+            intentID := "pi_test_" + tc.currency
+
+            mockIntent := &stripe.PaymentIntent{
+                ID:     intentID,
+                Amount: amount,
+                Currency: stripe.Currency(tc.currency),
+                Status: stripe.PaymentIntentStatusRequiresPaymentMethod,
+            }
+
+            mockClient.On("CreatePaymentIntent", amount, tc.currency).Return(mockIntent, nil)
+            mockRepo.On("Create", mock.AnythingOfType("*model.Payment")).Return(nil)
+
+            // Act
+            result, err := service.CreatePayment(orderID, amount, tc.currency)
+
+            // Assert
+            assert.NoError(t, err)
+            assert.Equal(t, tc.currency, result.Currency)
+
+            mockClient.AssertExpectations(t)
+            mockRepo.AssertExpectations(t)
+        })
+    }
+}
