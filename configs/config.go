@@ -15,6 +15,8 @@ type config struct {
 	WebServerPort string	`mapstructure:"WEB_SERVER_PORT"`
 	JWTSecret string	`mapstructure:"JWT_SECRET"`
 	JwtExpiresIn int	`mapstructure:"JWT_EXPIRES_IN"`
+	StripeSecretKey string `mapstructure:"STRIPE_SECRET_KEY"`           
+    StripePublishableKey string `mapstructure:"STRIPE_PUBLISHABLE_KEY"` 
 	TokenAuth *jwtauth.JWTAuth
 }
 
