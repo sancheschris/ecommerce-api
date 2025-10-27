@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -11,9 +12,10 @@ import (
 
 
 func TestCreatePayment_Success(t *testing.T) {
-    repo := &MockPaymentRepo{}
-    client := &MockPaymentClient{}
-    service := NewPaymentService(repo, client)
+    // Arrange
+    mockRepo := &MockPaymentRepo{}
+    mockClient := &MockPaymentClient{}
+    service := NewPaymentService(mockRepo, mockClient)
 
     orderID := 1
     amount := int64(2000)
@@ -28,8 +30,8 @@ func TestCreatePayment_Success(t *testing.T) {
         Currency: stripe.Currency(currency),
     }
 
-    client.On("CreatePaymentIntent", amount, currency).Return(intent, nil)
-    repo.On("Create", mock.AnythingOfType("*model.Payment")).Return(nil)
+    mockRepo.On("CreatePaymentIntent", amount, currency).Return(intent, nil)
+    mockClient.On("Create", mock.AnythingOfType("*model.Payment")).Return(nil)
 
     // act
     actual, err := service.CreatePayment(orderID, amount, currency)
@@ -45,7 +47,33 @@ func TestCreatePayment_Success(t *testing.T) {
     assert.Equal(t, "stripe", actual.Method)
 	
     // Verify
-    client.AssertExpectations(t)
-    repo.AssertNumberOfCalls(t, "Create", 1)
-    client.AssertNumberOfCalls(t, "CreatePaymentIntent", 1)
+    mockClient.AssertExpectations(t)
+    mockRepo.AssertNumberOfCalls(t, "Create", 1)
+    mockClient.AssertNumberOfCalls(t, "CreatePaymentIntent", 1)
+}
+
+func TestCreatePayment__StripeError(t *testing.T) {
+    // Arrange
+    mockRepo := &MockPaymentRepo{}
+    mockClient := &MockPaymentClient{}
+    service := NewPaymentService(mockRepo, mockClient)
+
+    orderID := 1
+    amount := int64(2000)
+    currency := "usd"
+
+    stripeError := errors.New("stripe connection failed")
+    mockClient.On("CreatePaymentIntent", amount, currency).Return((*stripe.PaymentIntent)(nil), stripeError)
+    
+    // Act
+    result, err := service.CreatePayment(orderID, amount, currency)
+
+    // Assert
+    assert.Error(t, err)
+    assert.Nil(t, result)
+    assert.Contains(t, err.Error(), "failed to create stripe payment intent")
+    assert.Contains(t, err.Error(), "stripe connection failed")
+
+    mockClient.AssertExpectations(t)
+    mockRepo.AssertNotCalled(t, "Create")
 }
