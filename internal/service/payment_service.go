@@ -9,11 +9,11 @@ import (
 )
 
 type PaymentService struct {
-	paymentRepo *paymentRepo.Payment
+	paymentRepo paymentRepo.PaymentInterface
 	stripeClient payment.PaymentClient
 }
 
-func NewPaymentService(repo *paymentRepo.Payment, client payment.PaymentClient) *PaymentService {
+func NewPaymentService(repo paymentRepo.PaymentInterface, client payment.PaymentClient) *PaymentService {
 	return &PaymentService{
 		paymentRepo: repo,
 		stripeClient: client,
