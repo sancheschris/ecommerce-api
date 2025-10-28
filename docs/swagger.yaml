@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  dto.CreatePaymentRequest:
+    properties:
+      amount_cents:
+        type: integer
+      currency:
+        type: string
+      order_id:
+        type: integer
+    type: object
   dto.CreateUserRequest:
     properties:
       email:
@@ -155,10 +164,15 @@ definitions:
   model.Payment:
     properties:
       amount_cents:
-        type: number
+        description: Changed to int64 for Stripe compatibility
+        type: integer
       created_at:
         type: string
       currency:
+        type: string
+      failure_code:
+        type: string
+      failure_reason:
         type: string
       id:
         type: integer
@@ -166,15 +180,19 @@ definitions:
         type: string
       order_id:
         type: integer
+      processed_at:
+        type: string
       provider:
         description: e.g. "stripe"
         type: string
       status:
-        description: pending, succeeded, failed
+        description: pending, succeeded, failed, canceled
         type: string
-      stripeChargeId:
+      stripe_charge_id:
         type: string
-      stripePaymentIntentId:
+      stripe_customer_id:
+        type: string
+      stripe_payment_intent_id:
         type: string
       updated_at:
         type: string
@@ -317,6 +335,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Order'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
         "404":
           description: Not Found
           schema:
@@ -371,6 +393,66 @@ paths:
       summary: Update order
       tags:
       - orders
+  /payments:
+    post:
+      consumes:
+      - application/json
+      description: Create Payments
+      parameters:
+      - description: payment request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePaymentRequest'
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create Payment
+      tags:
+      - payments
+  /payments/{id}/status:
+    get:
+      consumes:
+      - application/json
+      description: get payment by status
+      parameters:
+      - description: payment ID
+        format: string
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Order'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get payment by status
+      tags:
+      - payments
   /products:
     get:
       consumes:

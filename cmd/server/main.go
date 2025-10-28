@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/jwtauth"
 	"github.com/sancheschris/ecommerce-api/configs"
 	_ "github.com/sancheschris/ecommerce-api/docs"
 	"github.com/sancheschris/ecommerce-api/internal/handler"
@@ -61,7 +62,7 @@ func main() {
 	orderDB := orderRepo.NewOrder(db)
 	orderHandler := handler.NewOrderHandler(orderDB)
 
-if configs.StripeSecretKey == "" {
+	if configs.StripeSecretKey == "" {
         log.Fatal("STRIPE_SECRET_KEY configuration is required")
     }
 
@@ -78,23 +79,35 @@ if configs.StripeSecretKey == "" {
 	
 	r.Post("/users", userHandler.Create)
 	r.Post("/users/generate_token", userHandler.GetJWT)
-	r.Get("/users/orders", userHandler.GetOrders)
+	r.With(jwtauth.Verifier(configs.TokenAuth), jwtauth.Authenticator).Get("/users/orders", userHandler.GetOrders)
 
-	r.Post("/products", productHandler.Create)
-	r.Get("/products/{id}", productHandler.GetProductByID)
-	r.Get("/products", productHandler.GetProducts)
-	r.Put("/products/{id}", productHandler.UpdateProduct)
-	r.Delete("/products/{id}", productHandler.DeleteProduct)
+	r.Route("/products", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(configs.TokenAuth))
+		r.Use(jwtauth.Authenticator)
+		r.Post("/", productHandler.Create)
+		r.Get("/{id}", productHandler.GetProductByID)
+		r.Get("/", productHandler.GetProducts)
+		r.Put("/{id}", productHandler.UpdateProduct)
+		r.Delete("/{id}", productHandler.DeleteProduct)
+	})
 
-	r.Post("/orders", orderHandler.CreateOrder)
-	r.Get("/orders", orderHandler.GetOrders)
-	r.Get("/orders/{id}", orderHandler.GetOrderByID)
-	r.Get("/users/{id}/orders", orderHandler.GetOrdersByUserID)
-	r.Put("/orders/{id}", orderHandler.UpdateOrder)
-	r.Delete("/orders/{id}", orderHandler.DeleteOrder)
-
-	r.Post("/payments", paymentHandler.CreatePayment)
-	r.Get("/payments/{id}/status", paymentHandler.GetPaymentStatus)
+	r.Route("/orders", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(configs.TokenAuth))
+		r.Use(jwtauth.Authenticator)
+		r.Post("/", orderHandler.CreateOrder)
+		r.Get("/", orderHandler.GetOrders)
+		r.Get("/{id}", orderHandler.GetOrderByID)
+		r.Get("/{id}/orders", orderHandler.GetOrdersByUserID)
+		r.Put("/{id}", orderHandler.UpdateOrder)
+		r.Delete("/{id}", orderHandler.DeleteOrder)
+	})
+	
+	r.Route("/payments", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(configs.TokenAuth))
+		r.Use(jwtauth.Authenticator)
+		r.Post("/", paymentHandler.CreatePayment)
+		r.Get("/{id}/status", paymentHandler.GetPaymentStatus)
+	})
 
 	r.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/docs/doc.json")))
 

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/sancheschris/ecommerce-api/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	stripe "github.com/stripe/stripe-go/v76"
@@ -76,6 +77,40 @@ func TestCreatePayment__StripeError(t *testing.T) {
 
     mockClient.AssertExpectations(t)
     mockRepo.AssertNotCalled(t, "Create")
+}
+
+func TestUpdatePaymentStatus_NilStripePaymentIntentID(t *testing.T) {
+    // Arrange
+    repo := new(MockPaymentRepo)
+    client := new(MockPaymentClient)
+    service := NewPaymentService(repo, client)
+
+    paymentID := 1
+
+    // Create a payment with nil StripePaymentIntentID
+    paymentWithoutStripeID := &model.Payment{
+        ID:                    paymentID,
+        OrderID:              123,
+        AmountCents:          2000,
+        Currency:             "usd",
+        Status:               "pending",
+        StripePaymentIntentID: nil, // This is the key - nil pointer
+        Method:               "stripe",
+    }
+
+    repo.On("GetByID", paymentID).Return(paymentWithoutStripeID, nil)
+
+    // Act
+    result, err := service.UpdatePaymentStatus(paymentID)
+
+    // Assert
+    assert.Error(t, err)
+    assert.Nil(t, result)
+    assert.Contains(t, err.Error(), "payment has no stripe payment intent ID")
+
+    // Verify that we never called Stripe since we returned early
+    client.AssertNotCalled(t, "GetPaymentIntentStatus")
+    repo.AssertExpectations(t)
 }
 
 func TestCreatePayment_DatabaseError(t *testing.T) {

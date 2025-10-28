@@ -20,6 +20,18 @@ func NewPaymentHandler(paymentService *service.PaymentService) *PaymentHandler {
 	}
 }
 
+// Create payment godoc
+// @Summary Create Payment
+// @Description Create Payments
+// @Tags payments
+// @Accept json
+// @Product json
+// @Param request body dto.CreatePaymentRequest true "payment request"
+// @Success 201
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /payments [post]
+// @Security ApiKeyAuth
 func (h *PaymentHandler) CreatePayment(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreatePaymentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -37,6 +49,19 @@ func (h *PaymentHandler) CreatePayment(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(payment)
 }
 
+// GetPaymentStatus godoc
+// @Summary Get payment by status
+// @Description get payment by status
+// @Tags payments
+// @Accept json
+// @Produce json
+// @Param id path string true "payment ID" format(string)
+// @Success 200 {object} model.Order
+// @Failure 400 {object} Error
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /payments/{id}/status [get]
+// @Security ApiKeyAuth
 func (h *PaymentHandler) GetPaymentStatus(w http.ResponseWriter, r *http.Request) {
    idStr := chi.URLParam(r, "id")
     if idStr == "" {
