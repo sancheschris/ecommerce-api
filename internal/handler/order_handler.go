@@ -100,7 +100,7 @@ func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param id path string true "order ID" format(string)
 // @Success 200 {object} model.Order
-// @Faikure 400 {object} Error
+// @Failure 400 {object} Error
 // @Failure 404 {object} Error
 // @Failure 500 {object} Error
 // @Router /orders/{id} [get]

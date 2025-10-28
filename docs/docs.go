@@ -200,6 +200,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.Order"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -265,6 +271,101 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create Payments",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Create Payment",
+                "parameters": [
+                    {
+                        "description": "payment request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreatePaymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/{id}/status": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get payment by status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Get payment by status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "format": "string",
+                        "description": "payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/handler.Error"
                         }
@@ -619,6 +720,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.CreatePaymentRequest": {
+            "type": "object",
+            "properties": {
+                "amount_cents": {
+                    "type": "integer"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "order_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.CreateUserRequest": {
             "type": "object",
             "properties": {
@@ -856,12 +971,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "amount_cents": {
-                    "type": "number"
+                    "description": "Changed to int64 for Stripe compatibility",
+                    "type": "integer"
                 },
                 "created_at": {
                     "type": "string"
                 },
                 "currency": {
+                    "type": "string"
+                },
+                "failure_code": {
+                    "type": "string"
+                },
+                "failure_reason": {
                     "type": "string"
                 },
                 "id": {
@@ -873,18 +995,24 @@ const docTemplate = `{
                 "order_id": {
                     "type": "integer"
                 },
+                "processed_at": {
+                    "type": "string"
+                },
                 "provider": {
                     "description": "e.g. \"stripe\"",
                     "type": "string"
                 },
                 "status": {
-                    "description": "pending, succeeded, failed",
+                    "description": "pending, succeeded, failed, canceled",
                     "type": "string"
                 },
-                "stripeChargeId": {
+                "stripe_charge_id": {
                     "type": "string"
                 },
-                "stripePaymentIntentId": {
+                "stripe_customer_id": {
+                    "type": "string"
+                },
+                "stripe_payment_intent_id": {
                     "type": "string"
                 },
                 "updated_at": {
