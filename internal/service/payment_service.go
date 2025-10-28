@@ -48,6 +48,10 @@ func (p *PaymentService) UpdatePaymentStatus(paymentID int) (*model.Payment, err
 		return nil, fmt.Errorf("payment not found: %w", err)
 	}
 
+	if payment.StripePaymentIntentID == nil {
+        return nil, fmt.Errorf("payment has no stripe payment intent ID")
+    }
+
 	// check status with stripe
 	intent, err := p.stripeClient.GetPaymentIntentStatus(*payment.StripePaymentIntentID)
 	if err != nil {
