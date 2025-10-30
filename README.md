@@ -15,7 +15,7 @@ A comprehensive RESTful API for managing an ecommerce platform built with Go. Th
 ## Tech Stack
 
 - **Language**: Go 1.24+
-- **Framework**: Gin HTTP framework
+- **Framework**: Chi HTTP router
 - **Database**: GORM with SQLite (configurable)
 - **Payment**: Stripe API integration
 - **Authentication**: JWT tokens
@@ -79,12 +79,14 @@ A comprehensive RESTful API for managing an ecommerce platform built with Go. Th
 
 The API will be available at `http://localhost:8080`
 
-## Authentication
+## Complete API Workflow
 
-### Register a new user
+Follow this step-by-step guide to use the complete ecommerce flow:
+
+### 1. Create a User Account
 
 ```bash
-curl -X POST http://localhost:8080/auth/register \
+curl -X POST http://localhost:8080/users \
   -H "Content-Type: application/json" \
   -d '{
     "name": "John Doe",
@@ -93,10 +95,10 @@ curl -X POST http://localhost:8080/auth/register \
   }'
 ```
 
-### Login to get access token
+### 2. Generate Authentication Token
 
 ```bash
-curl -X POST http://localhost:8080/auth/login \
+curl -X POST http://localhost:8080/users/generate_token \
   -H "Content-Type: application/json" \
   -d '{
     "email": "john@example.com",
@@ -104,79 +106,73 @@ curl -X POST http://localhost:8080/auth/login \
   }'
 ```
 
-Response:
+**Save the returned `access_token` for subsequent requests.**
 
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": 1,
-    "name": "John Doe",
-    "email": "john@example.com"
-  }
-}
-```
+### 3. Get or Create Products
 
-### Using the token in requests
-
-Include the token in the Authorization header:
-
+List existing products:
 ```bash
 curl -X GET http://localhost:8080/products \
-  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
-## API Endpoints
-
-### Products
-
-- `GET /products` - List all products
-- `GET /products/{id}` - Get product by ID
-- `POST /products` - Create new product
-- `PUT /products/{id}` - Update product
-- `DELETE /products/{id}` - Delete product
-
-### Orders
-
-- `GET /orders` - List user orders
-- `GET /orders/{id}` - Get order by ID
-- `POST /orders` - Create new order
-
-### Payments
-
-- `POST /payments` - Process payment
-- `GET /payments/{id}` - Get payment details
-
-### Example: Create a product
-
+Or create a new product:
 ```bash
 curl -X POST http://localhost:8080/products \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Laptop",
-    "price": 999.99,
+    "name": "Premium Laptop",
+    "description": "High-performance laptop",
+    "price": 1299.99,
+    "stock_quantity": 50,
     "active": true
   }'
 ```
 
-### Example: Create an order
+### 4. Create an Order
 
 ```bash
 curl -X POST http://localhost:8080/orders \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
+    "user_id": 1,
     "items": [
       {
         "product_id": 1,
-        "quantity": 2,
-        "unit_price": 999.99
+        "quantity": 1,
+        "price": 1299.99
       }
-    ],
-    "currency": "USD"
+    ]
   }'
 ```
+
+### 5. Process Payment
+
+```bash
+curl -X POST http://localhost:8080/payments \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "order_id": 1,
+    "amount_cents": 129999,
+    "currency": "usd"
+  }'
+```
+
+### 6. Check Payment Status
+
+```bash
+curl -X GET http://localhost:8080/payments/1/status \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Payment Statuses:**
+- `requires_payment_method` - Waiting for payment method
+- `processing` - Payment being processed  
+- `succeeded` - Payment completed
+- `canceled` - Payment canceled
 
 ## Testing
 
@@ -260,13 +256,3 @@ The application supports configuration via environment variables:
 | `STRIPE_SECRET_KEY`      | Stripe secret key      | -           | Yes      |
 | `STRIPE_PUBLISHABLE_KEY` | Stripe publishable key | -           | Yes      |
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Add tests for your changes
-5. Ensure all tests pass (`go test ./...`)
-6. Commit your changes (`git commit -m 'Add amazing feature'`)
-7. Push to the branch (`git push origin feature/amazing-feature`)
-8. Open a Pull Request
