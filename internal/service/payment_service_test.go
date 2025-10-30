@@ -31,8 +31,8 @@ func TestCreatePayment_Success(t *testing.T) {
         Currency: stripe.Currency(currency),
     }
 
-    mockRepo.On("CreatePaymentIntent", amount, currency).Return(intent, nil)
-    mockClient.On("Create", mock.AnythingOfType("*model.Payment")).Return(nil)
+    mockClient.On("CreatePaymentIntent", amount, currency).Return(intent, nil)
+    mockRepo.On("Create", mock.AnythingOfType("*model.Payment")).Return(nil)
 
     // act
     actual, err := service.CreatePayment(orderID, amount, currency)

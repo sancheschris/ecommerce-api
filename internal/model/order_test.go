@@ -56,7 +56,7 @@ func TestNewOrder(t *testing.T) {
 	// Assert payment details
 	assert.Equal(t, "stripe", order.Payments[0].Provider)
 	assert.Equal(t, "credit_card", order.Payments[0].Method)
-	assert.Equal(t, 150.0, order.Payments[0].AmountCents)
+	assert.Equal(t, int64(150.0), order.Payments[0].AmountCents)
 	assert.Equal(t, "USD", order.Payments[0].Currency)
 	assert.Equal(t, "pending", order.Payments[0].Status)
 }
