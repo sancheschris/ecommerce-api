@@ -3,12 +3,19 @@ name: Backend - Pull Request Build
 on:
   pull_request:
     branches: [main]
+    paths:
+      - "**.go"
+      - "go.mod"
+      - "go.sum"
+      - "internal/**"
+      - "cmd/**"
+      - "pkg/**"
+      - ".github/workflows/backend.*.yml"
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,37 +43,35 @@ jobs:
         with:
           file: ./coverage.out
 
-    lint:
-      name: Lint
-      runs-on: ubuntu-latest
+  lint: # ← This should be at the same indentation level as 'test'
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
 
-        - name: Set up Go
-          uses: actions/setup-go@v4
-          with:
-            go-version: "1.24"
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest
 
-        - name: Run golangci-lint
-          uses: golangci/golangci-lint-action@v3
-          with:
-            version: latest
+  build: # ← This should be at the same indentation level as 'test'
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [test, lint]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    build:
-      name: Build
-      runs-on: ubuntu-latest
-      needs: [test, lint]
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.24"
 
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-
-        - name: Set up Go
-          uses: actions/setup-go@v4
-          with:
-            go-version: "1.24"
-
-        - name: Build Application
-          run: go build -v -o bin/ecommerce-api ./cmd/server
+      - name: Build Application
+        run: go build -v -o bin/ecommerce-api ./cmd/server
