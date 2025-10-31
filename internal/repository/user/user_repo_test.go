@@ -55,11 +55,11 @@ func TestCreateUserTable(t *testing.T) {
 	userDB := NewUser(db)
 
 	tests := []struct {
-		name string
-		email string
+		name     string
+		email    string
 		password string
-		want bool
-	} {
+		want     bool
+	}{
 		{"Chris", "chris@gm.com", "secret", false},
 		{"", "bob@gm.com", "123", true},
 		{"Tedd", "", "secret", true},

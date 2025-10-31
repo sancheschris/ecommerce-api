@@ -99,7 +99,7 @@ func (h *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	products, err := h.ProductDB.GetProducts()
 	if err != nil {
 		http.Error(w, "Cannot retrieve products", http.StatusInternalServerError)
-		return 
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -132,7 +132,7 @@ func (h *ProductHandler) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Product not found", http.StatusNotFound)
 		return
 	}
-	
+
 	var productReq dto.ProductRequest
 	err = json.NewDecoder(r.Body).Decode(&productReq)
 	if err != nil {

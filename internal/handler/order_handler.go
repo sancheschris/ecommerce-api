@@ -12,7 +12,7 @@ import (
 )
 
 type OrderHandler struct {
-	OrderDB repo.OrderInterface 
+	OrderDB repo.OrderInterface
 }
 
 func NewOrderHandler(orderDB repo.OrderInterface) *OrderHandler {
@@ -38,7 +38,7 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&orderRequest)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return	
+		return
 	}
 
 	items := dto.ToOrderItems(orderRequest.Items)
@@ -57,9 +57,9 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 
 	savedOrder, err := h.OrderDB.GetOrderByID(o.ID)
 	if err != nil {
-        http.Error(w, "Error fetching created order", http.StatusInternalServerError)
-        return
-    }
+		http.Error(w, "Error fetching created order", http.StatusInternalServerError)
+		return
+	}
 
 	orderDTO := dto.ToOrderDTO(savedOrder)
 
@@ -154,18 +154,18 @@ func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	
+
 	items := dto.ToOrderItems(orderReq.Items)
 	payments := dto.ToPayments(orderReq.Payments)
 
 	order := &model.Order{
-		ID: int(id),
-		UserID: orderReq.UserID,
-		Status: orderReq.Status,
+		ID:         int(id),
+		UserID:     orderReq.UserID,
+		Status:     orderReq.Status,
 		TotalPrice: orderReq.TotalPrice,
-		Currency: orderReq.Currency,
-		Items: items,
-		Payments: payments,
+		Currency:   orderReq.Currency,
+		Items:      items,
+		Payments:   payments,
 	}
 
 	err = h.OrderDB.UpdateOrder(order)

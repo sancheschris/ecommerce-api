@@ -15,7 +15,7 @@ type PaymentHandler struct {
 }
 
 func NewPaymentHandler(paymentService *service.PaymentService) *PaymentHandler {
-	return &PaymentHandler {
+	return &PaymentHandler{
 		paymentService: paymentService,
 	}
 }
@@ -36,7 +36,7 @@ func (h *PaymentHandler) CreatePayment(w http.ResponseWriter, r *http.Request) {
 	var req dto.CreatePaymentRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
-        return
+		return
 	}
 
 	payment, err := h.paymentService.CreatePayment(req.OrderID, req.Amount, req.Currency)
@@ -63,25 +63,24 @@ func (h *PaymentHandler) CreatePayment(w http.ResponseWriter, r *http.Request) {
 // @Router /payments/{id}/status [get]
 // @Security ApiKeyAuth
 func (h *PaymentHandler) GetPaymentStatus(w http.ResponseWriter, r *http.Request) {
-   idStr := chi.URLParam(r, "id")
-    if idStr == "" {
-        http.Error(w, "Payment ID is required", http.StatusBadRequest)
-        return
-    }
+	idStr := chi.URLParam(r, "id")
+	if idStr == "" {
+		http.Error(w, "Payment ID is required", http.StatusBadRequest)
+		return
+	}
 
-    paymentID, err := strconv.Atoi(idStr)
-    if err != nil {
-        http.Error(w, "Invalid payment ID", http.StatusBadRequest)
-        return
-    }
+	paymentID, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid payment ID", http.StatusBadRequest)
+		return
+	}
 
-    payment, err := h.paymentService.UpdatePaymentStatus(paymentID)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	payment, err := h.paymentService.UpdatePaymentStatus(paymentID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(payment)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(payment)
 }
-

@@ -8,9 +8,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-
 func TestNewUser(t *testing.T) {
-	u, err := NewUser("Edson",  "ed@gmail.com", "123456")
+	u, err := NewUser("Edson", "ed@gmail.com", "123456")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -23,7 +22,7 @@ func TestNewUser(t *testing.T) {
 	}
 }
 
-func TestNewUserWithAssert(t * testing.T) {
+func TestNewUserWithAssert(t *testing.T) {
 	user, err := NewUser("Chris", "chris@gmail.com", "secret")
 	assert.Nil(t, err)
 	assert.NotNil(t, user)
@@ -49,11 +48,11 @@ func TestUserWhenEmailIsRequired(t *testing.T) {
 func TestNewUserTableDriven(t *testing.T) {
 	tests := []struct {
 		nameTest string
-		name string
-		email string
+		name     string
+		email    string
 		password string
-		want error
-	} {
+		want     error
+	}{
 		{"ok", "Bob", "bob@gmail.com", "secret", nil},
 		{"missing name", "", "bob@gmail.com", "secret", ErrNameIsRequired},
 		{"missing email", "Bob", "", "secret", ErrEmailIsRequired},
@@ -93,10 +92,10 @@ func TestNewUserTableDriven(t *testing.T) {
 
 func TestUserValidate(t *testing.T) {
 	tests := []struct {
-		name string
-		user User
+		name    string
+		user    User
 		wantErr error
-	} {
+	}{
 		{"ok", User{Name: "Alice", Email: "a@b.com", Password: "x"}, nil},
 		{"missing name", User{Name: "", Email: "a@b.com", Password: "x"}, ErrNameIsRequired},
 		{"missing email", User{Name: "Alice", Email: "", Password: "x"}, ErrEmailIsRequired},

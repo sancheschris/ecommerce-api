@@ -13,11 +13,11 @@ func TestNewProduct(t *testing.T) {
 	productDB := NewProduct(db)
 
 	tests := []struct {
-		name string
-		price float64
+		name   string
+		price  float64
 		active bool
-		want bool
-	} {
+		want   bool
+	}{
 		{"Iphone 16", 6900.00, true, false},
 		{"", 29000.00, true, true},
 		{"Macbook M1", 0.0, true, true},
@@ -58,35 +58,35 @@ func TestGetProductByIdTable(t *testing.T) {
 	productDB := NewProduct(db)
 
 	product1, _ := model.NewProduct("Macbook M4 Pro", 26000.00, true)
-    db.Create(product1)
-    product2, _ := model.NewProduct("Iphone 16", 8900.00, true)
-    db.Create(product2)
+	db.Create(product1)
+	product2, _ := model.NewProduct("Iphone 16", 8900.00, true)
+	db.Create(product2)
 
 	tests := []struct {
-    name     string
-    id       int64
-    wantName string
-    wantPrice float64
-    wantErr  bool
-}{
-    {"Valid ID", product2.ID, "Iphone 16", 8900.00, false},
-    {"Invalid ID", -1, "", 0.0, true},
-    {"Non-existent ID", 9999, "", 0.0, true},
-}
+		name      string
+		id        int64
+		wantName  string
+		wantPrice float64
+		wantErr   bool
+	}{
+		{"Valid ID", product2.ID, "Iphone 16", 8900.00, false},
+		{"Invalid ID", -1, "", 0.0, true},
+		{"Non-existent ID", 9999, "", 0.0, true},
+	}
 
-for _, tt := range tests {
-    t.Run(tt.name, func(t *testing.T) {
-        product, err := productDB.GetProductByID(tt.id)
-        if tt.wantErr {
-            assert.Error(t, err)
-            assert.Nil(t, product)
-        } else {
-            assert.NoError(t, err)
-            assert.NotNil(t, product)
-            assert.Equal(t, tt.wantName, product.Name)
-            assert.Equal(t, tt.wantPrice, product.Price)
-        }
-    })
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			product, err := productDB.GetProductByID(tt.id)
+			if tt.wantErr {
+				assert.Error(t, err)
+				assert.Nil(t, product)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, product)
+				assert.Equal(t, tt.wantName, product.Name)
+				assert.Equal(t, tt.wantPrice, product.Price)
+			}
+		})
 	}
 }
 
@@ -131,7 +131,7 @@ func TestUpdateProduct(t *testing.T) {
 
 	p1, _ := model.NewProduct("Iphone 15", 3600.00, true)
 	db.Create(p1)
-	
+
 	currentProduct, err := productDB.GetProductByID(p1.ID)
 	assert.NoError(t, err)
 	assert.NotNil(t, currentProduct)

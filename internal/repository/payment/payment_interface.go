@@ -2,7 +2,7 @@ package payment
 
 import "github.com/sancheschris/ecommerce-api/internal/model"
 
-type PaymentInterface interface{
+type PaymentInterface interface {
 	Create(payment *model.Payment) error
 	GetByID(id int) (*model.Payment, error)
 	Update(payment *model.Payment) error

@@ -8,13 +8,12 @@ import (
 type PaymentClient interface {
 	CreatePaymentIntent(amount int64, currency string) (*stripe.PaymentIntent, error)
 	ConfirmPaymentIntent(paymentIntentID string) (*stripe.PaymentIntent, error)
-    GetPaymentIntentStatus(paymentIntentID string) (*stripe.PaymentIntent, error) 
+	GetPaymentIntentStatus(paymentIntentID string) (*stripe.PaymentIntent, error)
 	CreateCustomer(email, name string) (*stripe.Customer, error)
 }
 
 type StripeClient struct {
 	client *client.API
-	
 }
 
 func NewStripeClient(secretKey string) *StripeClient {
@@ -47,4 +46,3 @@ func (s *StripeClient) CreateCustomer(email, name string) (*stripe.Customer, err
 	}
 	return s.client.Customers.New(params)
 }
-

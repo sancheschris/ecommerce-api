@@ -97,7 +97,7 @@ func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	_, tokenString, _ := jwt.Encode(map[string]interface{} {
+	_, tokenString, _ := jwt.Encode(map[string]interface{}{
 		"sub": u.ID,
 		"exp": time.Now().Add(time.Second * time.Duration(jwtExpiresIn)).Unix(),
 	})
