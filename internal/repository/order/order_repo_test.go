@@ -140,7 +140,8 @@ func TestGetOrderByID(t *testing.T) {
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
 
-	orderDB.CreateOrder(order)
+	err := orderDB.CreateOrder(order)
+	assert.NoError(t, err)
 
 	actual, err := orderDB.GetOrderByID(order.ID)
 
@@ -159,7 +160,8 @@ func TestUpdateOrder(t *testing.T) {
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
-	orderDB.CreateOrder(order)
+ 	err := orderDB.CreateOrder(order)
+	assert.NoError(t, err)
 
 	existingOrder, _ := orderDB.GetOrderByID(order.ID)
 	assert.Equal(t, 200.00, existingOrder.TotalPrice)
@@ -168,7 +170,8 @@ func TestUpdateOrder(t *testing.T) {
 	existingOrder.TotalPrice = 350.00
 	existingOrder.Status = "Done"
 
-	orderDB.UpdateOrder(existingOrder)
+	err = orderDB.UpdateOrder(existingOrder) 
+    assert.NoError(t, err)
 
 	actual, _ := orderDB.GetOrderByID(existingOrder.ID)
 
@@ -184,13 +187,14 @@ func TestDeleteOrder(t *testing.T) {
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
-	orderDB.CreateOrder(order)
+	err := orderDB.CreateOrder(order) // ✅ Check the error
+    assert.NoError(t, err)
 
 	existingOrder, _ := orderDB.GetOrderByID(order.ID)
 
 	assert.Equal(t, "USD", existingOrder.Currency)
 
-	err := orderDB.DeleteOrder(existingOrder.ID)
+	err = orderDB.DeleteOrder(existingOrder.ID)
 	assert.NoError(t, err)
 
 	deletedOrder, _ := orderDB.GetOrderByID(existingOrder.ID)
