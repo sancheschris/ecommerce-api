@@ -31,7 +31,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "get orders by user id",
+                "description": "get orders by an user",
                 "consumes": [
                     "application/json"
                 ],
@@ -41,7 +41,7 @@ const docTemplate = `{
                 "tags": [
                     "orders"
                 ],
-                "summary": "Get orders by user id",
+                "summary": "Get all orders by an user",
                 "parameters": [
                     {
                         "type": "string",

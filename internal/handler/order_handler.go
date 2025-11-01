@@ -255,8 +255,8 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetOrderByUserID godoc
-// @Summary Get orders by user id
-// @Description get orders by user id
+// @Summary Get all orders by an user
+// @Description get orders by an user
 // @Tags orders
 // @Accept json
 // @Produce json

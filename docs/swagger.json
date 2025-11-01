@@ -25,7 +25,7 @@
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "get orders by user id",
+                "description": "get orders by an user",
                 "consumes": [
                     "application/json"
                 ],
@@ -35,7 +35,7 @@
                 "tags": [
                     "orders"
                 ],
-                "summary": "Get orders by user id",
+                "summary": "Get all orders by an user",
                 "parameters": [
                     {
                         "type": "string",

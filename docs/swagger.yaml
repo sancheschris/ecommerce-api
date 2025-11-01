@@ -317,7 +317,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: get orders by user id
+      description: get orders by an user
       parameters:
       - description: order ID
         format: string
@@ -342,7 +342,7 @@ paths:
             $ref: '#/definitions/handler.Error'
       security:
       - ApiKeyAuth: []
-      summary: Get orders by user id
+      summary: Get all orders by an user
       tags:
       - orders
     post:
