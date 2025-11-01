@@ -19,6 +19,31 @@ func ToOrderItems(reqItems []OrderItemDTO) []model.OrderItem {
 	return items
 }
 
+func ToOrderItemsFromRequest(reqItems []CreateOrderItemRequest) []model.OrderItem {
+	items := make([]model.OrderItem, len(reqItems))
+	for i, item := range reqItems {
+		items[i] = model.OrderItem{
+			ProductID: item.ProductID,
+			Qty: item.Quantity,
+			UnitPrice: item.Price,
+		}
+	}
+	return items
+}
+
+func ToOrderItemsFromUpdateRequest(reqItems []UpdateOrderItemRequest) []model.OrderItem {
+	items := make([]model.OrderItem, len(reqItems))
+	for i, item := range reqItems {
+		items[i] = model.OrderItem{
+			ID: item.ID,
+			ProductID: item.ProductID,
+			Qty: item.Quantity,
+			UnitPrice: item.Price,
+		}
+	}
+	return items
+}
+
 func ToPayments(reqPayments []PaymentDTO) []model.Payment {
 	payments := make([]model.Payment, len(reqPayments))
 	for i, payment := range reqPayments {

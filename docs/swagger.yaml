@@ -1,5 +1,35 @@
 basePath: /
 definitions:
+  dto.CreateOrderItemRequest:
+    properties:
+      price:
+        minimum: 0
+        type: number
+      product_id:
+        minimum: 1
+        type: integer
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - price
+    - product_id
+    - quantity
+    type: object
+  dto.CreateOrderRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.CreateOrderItemRequest'
+        minItems: 1
+        type: array
+      user_id:
+        minimum: 1
+        type: integer
+    required:
+    - items
+    - user_id
+    type: object
   dto.CreatePaymentRequest:
     properties:
       amount_cents:
@@ -114,6 +144,34 @@ definitions:
         type: string
       price:
         type: number
+    type: object
+  dto.UpdateOrderItemRequest:
+    properties:
+      id:
+        description: Optional for new items
+        type: integer
+      price:
+        minimum: 0
+        type: number
+      product_id:
+        minimum: 1
+        type: integer
+      quantity:
+        minimum: 1
+        type: integer
+    required:
+    - price
+    - product_id
+    - quantity
+    type: object
+  dto.UpdateOrderRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.UpdateOrderItemRequest'
+        type: array
+      status:
+        type: string
     type: object
   handler.Error:
     properties:
@@ -297,7 +355,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.OrderDTO'
+          $ref: '#/definitions/dto.CreateOrderRequest'
       produces:
       - application/json
       responses:
@@ -368,12 +426,12 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.OrderDTO'
+          $ref: '#/definitions/dto.UpdateOrderRequest'
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
           schema:
             $ref: '#/definitions/dto.OrderDTO'
         "400":
