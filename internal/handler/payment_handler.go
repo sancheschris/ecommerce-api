@@ -46,7 +46,11 @@ func (h *PaymentHandler) CreatePayment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(payment)
+	w.WriteHeader(http.StatusCreated)
+	if err := json.NewEncoder(w).Encode(payment); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // GetPaymentStatus godoc
@@ -82,5 +86,9 @@ func (h *PaymentHandler) GetPaymentStatus(w http.ResponseWriter, r *http.Request
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(payment)
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(payment); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }

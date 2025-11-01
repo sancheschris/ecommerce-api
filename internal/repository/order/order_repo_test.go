@@ -160,7 +160,7 @@ func TestUpdateOrder(t *testing.T) {
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
- 	err := orderDB.CreateOrder(order)
+	err := orderDB.CreateOrder(order)
 	assert.NoError(t, err)
 
 	existingOrder, _ := orderDB.GetOrderByID(order.ID)
@@ -170,8 +170,8 @@ func TestUpdateOrder(t *testing.T) {
 	existingOrder.TotalPrice = 350.00
 	existingOrder.Status = "Done"
 
-	err = orderDB.UpdateOrder(existingOrder) 
-    assert.NoError(t, err)
+	err = orderDB.UpdateOrder(existingOrder)
+	assert.NoError(t, err)
 
 	actual, _ := orderDB.GetOrderByID(existingOrder.ID)
 
@@ -188,7 +188,7 @@ func TestDeleteOrder(t *testing.T) {
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
 	err := orderDB.CreateOrder(order) // ✅ Check the error
-    assert.NoError(t, err)
+	assert.NoError(t, err)
 
 	existingOrder, _ := orderDB.GetOrderByID(order.ID)
 
@@ -207,10 +207,11 @@ func TestAddOrderItem(t *testing.T) {
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
-	orderDB.CreateOrder(order)
+	err := orderDB.CreateOrder(order)
+	assert.NoError(t, err)
 
 	newItem := model.OrderItem{ProductID: 2, Qty: 1, UnitPrice: 50}
-	err := orderDB.AddOrderItem(order.ID, &newItem)
+	err = orderDB.AddOrderItem(order.ID, &newItem)
 	assert.NoError(t, err)
 
 	updatedOrder, _ := orderDB.GetOrderByID(order.ID)
@@ -224,10 +225,11 @@ func TestUpdateOrderItem(t *testing.T) {
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
-	orderDB.CreateOrder(order)
+	err := orderDB.CreateOrder(order)
+	assert.NoError(t, err)
 
 	newItem := model.OrderItem{ProductID: 2, Qty: 1, UnitPrice: 50.0}
-	err := orderDB.AddOrderItem(order.ID, &newItem)
+	err = orderDB.AddOrderItem(order.ID, &newItem)
 	assert.NoError(t, err)
 	assert.Equal(t, 50.0, newItem.UnitPrice)
 
@@ -250,10 +252,11 @@ func TestGetOrderItems(t *testing.T) {
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
-	orderDB.CreateOrder(order)
+	err := orderDB.CreateOrder(order)
+	assert.NoError(t, err)
 
 	newItem := model.OrderItem{ProductID: 2, Qty: 1, UnitPrice: 50.0}
-	err := orderDB.AddOrderItem(order.ID, &newItem)
+	err = orderDB.AddOrderItem(order.ID, &newItem)
 	assert.NoError(t, err)
 
 	orderItems, err := orderDB.GetOrderItems(order.ID)
@@ -269,10 +272,11 @@ func TestRemoveOrderItem(t *testing.T) {
 	orderDB := NewOrder(db)
 
 	order, _ := model.NewOrder(1, []model.OrderItem{{ProductID: 1, Qty: 2, UnitPrice: 100}}, "pending", 200, "USD", []model.Payment{})
-	orderDB.CreateOrder(order)
+	err := orderDB.CreateOrder(order)
+	assert.NoError(t, err)
 
 	newItem := model.OrderItem{ProductID: 2, Qty: 1, UnitPrice: 50.0}
-	err := orderDB.AddOrderItem(order.ID, &newItem)
+	err = orderDB.AddOrderItem(order.ID, &newItem)
 	assert.NoError(t, err)
 
 	// Remove the item

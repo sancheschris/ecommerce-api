@@ -63,7 +63,10 @@ func (h *UserHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(orders)
+	if err := json.NewEncoder(w).Encode(orders); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // GetJWT godoc
@@ -90,7 +93,10 @@ func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		err := Error{Message: err.Error()}
-		json.NewEncoder(w).Encode(err)
+		if err := json.NewEncoder(w).Encode(err); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 	if !u.ValidatePassword(user.Password) {
@@ -104,5 +110,8 @@ func (h *UserHandler) GetJWT(w http.ResponseWriter, r *http.Request) {
 	accessToken := dto.GetJWTResponse{AcessToken: tokenString}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(accessToken)
+	if err := json.NewEncoder(w).Encode(accessToken); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }

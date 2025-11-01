@@ -51,7 +51,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&model.User{}, &model.Product{}, &model.Payment{}, &model.Order{}, &model.OrderItem{})
+	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Payment{}, &model.Order{}, &model.OrderItem{})
+	if err != nil {
+		panic(err)
+	}
 
 	userDB := userRepo.NewUser(db)
 	userHandler := handler.NewUserHandler(userDB)
@@ -112,7 +115,7 @@ func main() {
 	r.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/docs/doc.json")))
 
 	log.Println("Server starting on :8080")
-    if err := http.ListenAndServe(":8080", r); err != nil { 
-        log.Fatal("Server failed to start:", err)
-    }
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatal("Server failed to start:", err)
+	}
 }
