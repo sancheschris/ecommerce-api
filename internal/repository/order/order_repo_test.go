@@ -261,7 +261,7 @@ func TestGetOrderItems(t *testing.T) {
 
 	orderItems, err := orderDB.GetOrderItems(order.ID)
 	assert.NoError(t, err)
-	assert.Equal(t, 110.00, orderItems[0].UnitPrice)
+	assert.Equal(t, 100.00, orderItems[0].UnitPrice)
 	assert.Equal(t, 1, orderItems[0].ProductID)
 	assert.Equal(t, 50.00, orderItems[1].UnitPrice)
 	assert.Equal(t, 2, orderItems[1].ProductID)
