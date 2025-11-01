@@ -27,24 +27,36 @@ func NewOrderHandler(orderDB repo.OrderInterface) *OrderHandler {
 // @Tags orders
 // @Accept json
 // @Produce json
-// @Param request body dto.OrderDTO true "order request"
+// @Param request body dto.CreateOrderRequest true "order request"
 // @Success 201
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
 // @Router /orders [post]
 // @Security ApiKeyAuth
 func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
-	var orderRequest dto.OrderDTO
+	var orderRequest dto.CreateOrderRequest
 	err := json.NewDecoder(r.Body).Decode(&orderRequest)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
-	items := dto.ToOrderItems(orderRequest.Items)
-	payments := dto.ToPayments(orderRequest.Payments)
+	items := dto.ToOrderItemsFromRequest(orderRequest.Items)
 
-	o, err := model.NewOrder(orderRequest.UserID, items, orderRequest.Status, orderRequest.TotalPrice, orderRequest.Currency, payments)
+	totalPrice := 0.0
+	for _, item := range items {
+		totalPrice += item.UnitPrice * float64(item.Qty)
+	}
+
+	o, err := model.NewOrder(
+		orderRequest.UserID,
+		items,
+		"pending",
+		totalPrice,
+		"USD",
+		[]model.Payment{},
+	)
+
 	if err != nil {
 		http.Error(w, "Error creating new order", http.StatusBadRequest)
 		return
@@ -125,7 +137,7 @@ func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Canno return order", http.StatusNotFound)
 		return
 	}
-	w.Header().Set("Contenty-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(&order)
 	if err != nil {
@@ -141,8 +153,8 @@ func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param id path string true "order ID" format(string)
-// @Param request body dto.OrderDTO true "order request"
-// @Success 204 {object} dto.OrderDTO
+// @Param request body dto.UpdateOrderRequest true "order request"
+// @Success 200 {object} dto.OrderDTO
 // @Failure 404 {object} Error
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
@@ -155,38 +167,42 @@ func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid id", http.StatusBadRequest)
 		return
 	}
-	_, err = h.OrderDB.GetOrderByID(int(id))
+	
+	existingOrder, err := h.OrderDB.GetOrderByID(int(id))
 	if err != nil {
 		http.Error(w, "Order not found", http.StatusNotFound)
 		return
 	}
-	var orderReq dto.OrderDTO
-	err = json.NewDecoder(r.Body).Decode(&orderReq)
+
+	var updateReq dto.UpdateOrderRequest
+	err = json.NewDecoder(r.Body).Decode(&updateReq)
 	if err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	items := dto.ToOrderItems(orderReq.Items)
-	payments := dto.ToPayments(orderReq.Payments)
-
-	order := &model.Order{
-		ID:         int(id),
-		UserID:     orderReq.UserID,
-		Status:     orderReq.Status,
-		TotalPrice: orderReq.TotalPrice,
-		Currency:   orderReq.Currency,
-		Items:      items,
-		Payments:   payments,
+	if updateReq.Status != "" {
+		existingOrder.Status = updateReq.Status
 	}
 
-	err = h.OrderDB.UpdateOrder(order)
+	if (len(updateReq.Items) > 0) {
+		items := dto.ToOrderItemsFromUpdateRequest(updateReq.Items)
+		existingOrder.Items = items
+
+		totalPrice := 0.0
+		for _, item := range items {
+			totalPrice += item.UnitPrice *float64(item.Qty)
+		}
+		existingOrder.TotalPrice = totalPrice
+	}
+
+	err = h.OrderDB.UpdateOrder(existingOrder)
 	if err != nil {
 		http.Error(w, "Error updating order", http.StatusInternalServerError)
 		return
 	}
 
-	updatedOrder, err := h.OrderDB.GetOrderByID(order.ID)
+	updatedOrder, err := h.OrderDB.GetOrderByID(existingOrder.ID)
 	if err != nil {
 		http.Error(w, "Cannot return order", http.StatusBadRequest)
 		return
@@ -235,13 +251,12 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
 
 // GetOrderByUserID godoc
-// @Summary Get orders by user id
-// @Description get orders by user id
+// @Summary Get all orders by an user
+// @Description get orders by an user
 // @Tags orders
 // @Accept json
 // @Produce json

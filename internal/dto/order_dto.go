@@ -30,6 +30,29 @@ type PaymentDTO struct {
 	UpdatedAt string  `json:"updated_at"`
 }
 
+type CreateOrderItemRequest struct {
+    ProductID int     `json:"product_id" validate:"required,min=1"`
+    Quantity  int     `json:"quantity" validate:"required,min=1"`
+    Price     float64 `json:"price" validate:"required,min=0"`
+}
+
+type CreateOrderRequest struct {
+    UserID int                      `json:"user_id" validate:"required,min=1"`
+    Items  []CreateOrderItemRequest `json:"items" validate:"required,min=1"`
+}
+
+type UpdateOrderItemRequest struct {
+    ID        int     `json:"id,omitempty"`        // Optional for new items
+    ProductID int     `json:"product_id" validate:"required,min=1"`
+    Quantity  int     `json:"quantity" validate:"required,min=1"`
+    Price     float64 `json:"price" validate:"required,min=0"`
+}
+
+type UpdateOrderRequest struct {
+    Status string                   `json:"status,omitempty"`    
+    Items  []UpdateOrderItemRequest `json:"items,omitempty"`      
+}
+
 type OrderDTO struct {
 	ID         int            `json:"id"`
 	UserID     int            `json:"user_id"`
