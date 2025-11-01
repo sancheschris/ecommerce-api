@@ -10,7 +10,7 @@ func ToOrderItems(reqItems []OrderItemDTO) []model.OrderItem {
 	items := make([]model.OrderItem, len(reqItems))
 	for i, item := range reqItems {
 		items[i] = model.OrderItem{
-			ID:        item.ID,       
+			ID:        item.ID,
 			ProductID: item.ProductID,
 			Qty:       item.Qty,
 			UnitPrice: item.UnitPrice,
@@ -23,7 +23,7 @@ func ToPayments(reqPayments []PaymentDTO) []model.Payment {
 	payments := make([]model.Payment, len(reqPayments))
 	for i, payment := range reqPayments {
 		payments[i] = model.Payment{
-			ID:          payment.ID,  
+			ID:          payment.ID,
 			Provider:    payment.Provider,
 			AmountCents: int64(payment.Amount),
 			Method:      payment.Method,
@@ -62,26 +62,26 @@ func ToOrderDTO(order *model.Order) OrderDTO {
 	payments := make([]PaymentDTO, len(order.Payments))
 	for i, p := range order.Payments {
 		payments[i] = PaymentDTO{
-			ID:          p.ID,
-			OrderID:     p.OrderID,
-			Provider:    p.Provider,
-			Amount: float64(p.AmountCents),
-			Method:      p.Method,
-			Currency:    p.Currency,
-			Status:      p.Status,
-			CreatedAt:   p.CreatedAt.Format(time.RFC3339),
-			UpdatedAt:   p.UpdatedAt.Format(time.RFC3339),
+			ID:        p.ID,
+			OrderID:   p.OrderID,
+			Provider:  p.Provider,
+			Amount:    float64(p.AmountCents),
+			Method:    p.Method,
+			Currency:  p.Currency,
+			Status:    p.Status,
+			CreatedAt: p.CreatedAt.Format(time.RFC3339),
+			UpdatedAt: p.UpdatedAt.Format(time.RFC3339),
 		}
 	}
 	return OrderDTO{
-		ID: order.ID,
-		UserID: order.UserID,
-		Status: order.Status,
+		ID:         order.ID,
+		UserID:     order.UserID,
+		Status:     order.Status,
 		TotalPrice: order.TotalPrice,
-		Currency: order.Currency,
-		Items: items,
-		Payments: payments,
+		Currency:   order.Currency,
+		Items:      items,
+		Payments:   payments,
 		CreatedAt:  order.CreatedAt.Format(time.RFC3339),
-        UpdatedAt:  order.UpdatedAt.Format(time.RFC3339),
+		UpdatedAt:  order.UpdatedAt.Format(time.RFC3339),
 	}
 }

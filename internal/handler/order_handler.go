@@ -12,7 +12,7 @@ import (
 )
 
 type OrderHandler struct {
-	OrderDB repo.OrderInterface 
+	OrderDB repo.OrderInterface
 }
 
 func NewOrderHandler(orderDB repo.OrderInterface) *OrderHandler {
@@ -38,7 +38,7 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&orderRequest)
 	if err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return	
+		return
 	}
 
 	items := dto.ToOrderItems(orderRequest.Items)
@@ -57,15 +57,18 @@ func (h *OrderHandler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 
 	savedOrder, err := h.OrderDB.GetOrderByID(o.ID)
 	if err != nil {
-        http.Error(w, "Error fetching created order", http.StatusInternalServerError)
-        return
-    }
+		http.Error(w, "Error fetching created order", http.StatusInternalServerError)
+		return
+	}
 
 	orderDTO := dto.ToOrderDTO(savedOrder)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(orderDTO)
+	if err := json.NewEncoder(w).Encode(orderDTO); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // ListOrders godoc
@@ -88,8 +91,13 @@ func (h *OrderHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 	for i, o := range orders {
 		ordersDTO[i] = dto.ToOrderDTO(&o)
 	}
-	json.NewEncoder(w).Encode(&orders)
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(&ordersDTO); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // GetOrder godoc
@@ -119,7 +127,11 @@ func (h *OrderHandler) GetOrderByID(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Contenty-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(&order)
+	err = json.NewEncoder(w).Encode(&order)
+	if err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // UpdateOrder godoc
@@ -154,18 +166,18 @@ func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	
+
 	items := dto.ToOrderItems(orderReq.Items)
 	payments := dto.ToPayments(orderReq.Payments)
 
 	order := &model.Order{
-		ID: int(id),
-		UserID: orderReq.UserID,
-		Status: orderReq.Status,
+		ID:         int(id),
+		UserID:     orderReq.UserID,
+		Status:     orderReq.Status,
 		TotalPrice: orderReq.TotalPrice,
-		Currency: orderReq.Currency,
-		Items: items,
-		Payments: payments,
+		Currency:   orderReq.Currency,
+		Items:      items,
+		Payments:   payments,
 	}
 
 	err = h.OrderDB.UpdateOrder(order)
@@ -184,7 +196,10 @@ func (h *OrderHandler) UpdateOrder(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(orderDTO)
+	if err := json.NewEncoder(w).Encode(orderDTO); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // DeleteOrder godoc
@@ -220,6 +235,7 @@ func (h *OrderHandler) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -256,5 +272,8 @@ func (h *OrderHandler) GetOrdersByUserID(w http.ResponseWriter, r *http.Request)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(ordersDTO)
+	if err := json.NewEncoder(w).Encode(ordersDTO); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }

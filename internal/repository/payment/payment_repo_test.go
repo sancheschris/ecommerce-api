@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestNewPayment(t *testing.T) {
 	db := repository.SetupTestDB(model.Payment{})
 	paymentDB := NewPayment(db)
@@ -153,23 +152,23 @@ func TestCreateNewPayment(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			payment, err := model.NewPayment(tt.orderID, tt.provider, tt.method, tt.currency, tt.status, tt.amountCents)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, payment)
 				return
 			}
-			
+
 			assert.NoError(t, err)
 			assert.NotNil(t, payment)
-			
+
 			// Test database creation
 			err = paymentDB.Create(payment)
 			assert.NoError(t, err)
-			
+
 			// Verify the payment was saved with correct data
 			assert.NotZero(t, payment.ID, "Payment ID should be set after creation")
-			
+
 			// Retrieve and verify
 			savedPayment, err := paymentDB.GetByID(payment.ID)
 			assert.NoError(t, err)
@@ -227,7 +226,7 @@ func TestGetByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := paymentDB.GetByID(tt.id)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, result)
@@ -295,7 +294,7 @@ func TestUpdate_InvalidPayment_ReturnsError(t *testing.T) {
 	payment.ID = 99999 // Non-existent ID
 
 	err = paymentDB.Update(payment)
-	assert.Error(t, err) 
+	assert.Error(t, err)
 }
 
 func TestDelete_ValidPayment_DeletesSuccessfully(t *testing.T) {
@@ -332,7 +331,7 @@ func TestGetByOrderID_ValidOrderID_ReturnsPaymentSuccessfully(t *testing.T) {
 	result, err := paymentDB.GetByOrderID(payment.OrderID)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	
+
 	// Detailed validation
 	assert.Equal(t, payment.OrderID, result.OrderID)
 	assert.Equal(t, "CAD", result.Currency)
@@ -346,20 +345,20 @@ func TestGetByOrderID_InvalidOrderID_ReturnsError(t *testing.T) {
 	db := repository.SetupTestDB(model.Payment{}, model.Order{})
 	paymentDB := NewPayment(db)
 
-	tests := []struct{
-		name string
+	tests := []struct {
+		name    string
 		orderID int
 	}{
 		{
-			name: "Zero Order ID",
+			name:    "Zero Order ID",
 			orderID: 0,
 		},
 		{
-			name: "Non-existent Order ID",
+			name:    "Non-existent Order ID",
 			orderID: 9999,
 		},
 		{
-			name: "Negative Order ID",
+			name:    "Negative Order ID",
 			orderID: -1,
 		},
 	}
@@ -384,7 +383,7 @@ func TestGetByUserID_ValidUserID_ReturnsPaymentSuccessfully(t *testing.T) {
 	}
 	order, err := model.NewOrder(123, orderItems, "pending", 31.98, "CAD", []model.Payment{})
 	assert.NoError(t, err)
-	
+
 	// Save the order to the database
 	err = db.Create(order).Error
 	assert.NoError(t, err)
@@ -400,7 +399,7 @@ func TestGetByUserID_ValidUserID_ReturnsPaymentSuccessfully(t *testing.T) {
 	result, err := paymentDB.GetByUserID(order.UserID)
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-	
+
 	// Verify the payment and order data
 	assert.Equal(t, payment.ID, result.ID)
 	assert.Equal(t, order.ID, result.OrderID)
@@ -414,20 +413,20 @@ func TestGetByUserID_InvalidUserID_ReturnsError(t *testing.T) {
 	db := repository.SetupTestDB(model.Payment{}, model.Order{})
 	paymentDB := NewPayment(db)
 
-	tests := []struct{
-		name string
+	tests := []struct {
+		name   string
 		userID int
 	}{
 		{
-			name: "Zero User ID",
+			name:   "Zero User ID",
 			userID: 0,
 		},
 		{
-			name: "Non-existent User ID",
+			name:   "Non-existent User ID",
 			userID: 9999,
 		},
 		{
-			name: "Negative User ID",
+			name:   "Negative User ID",
 			userID: -1,
 		},
 	}
@@ -451,7 +450,7 @@ func TestGetByStatus_ValidStatus_ReturnsPaymentsSuccessfully(t *testing.T) {
 	}
 	order, err := model.NewOrder(1, orderItems, "succeeded", 31.89, "CAD", []model.Payment{})
 	assert.NoError(t, err)
-	
+
 	err = db.Create(order).Error
 	assert.NoError(t, err)
 
@@ -475,7 +474,7 @@ func TestGetByStatus_ValidStatus_ReturnsPaymentsSuccessfully(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Len(t, result, 2)
-	
+
 	// Verify the payments have the correct status
 	for _, payment := range result {
 		assert.Equal(t, "succeeded", payment.Status)
@@ -509,7 +508,7 @@ func TestGetByStatus_InvalidStatus_ReturnsEmptySlice(t *testing.T) {
 			status: "requires_confirmation",
 		},
 		{
-			name: "Valid Status - canceled",
+			name:   "Valid Status - canceled",
 			status: "canceled",
 		},
 	}
@@ -517,11 +516,11 @@ func TestGetByStatus_InvalidStatus_ReturnsEmptySlice(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result, err := paymentDB.GetByStatus(tt.status)
-			
+
 			assert.NoError(t, err)
 			assert.NotNil(t, result)
 			assert.Len(t, result, 0)
-			assert.Empty(t, result) 
+			assert.Empty(t, result)
 		})
 	}
 }

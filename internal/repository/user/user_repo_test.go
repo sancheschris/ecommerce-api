@@ -14,7 +14,8 @@ func TestCreateUser(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	db.AutoMigrate(&model.User{})
+	err = db.AutoMigrate(&model.User{})
+	assert.NoError(t, err)
 	user, err := model.NewUser("Chris", "chris@gm.com", "secret")
 	assert.NoError(t, err)
 	assert.NotNil(t, user.Name)
@@ -30,7 +31,10 @@ func TestFindByEmail(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	db.AutoMigrate(&model.User{})
+	err = db.AutoMigrate(&model.User{})
+	if err != nil {
+		panic(err)
+	}
 	user, err := model.NewUser("Chris", "chris@gm.com", "secret")
 	assert.NoError(t, err)
 	assert.NotNil(t, user)
@@ -51,15 +55,16 @@ func TestCreateUserTable(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	db.AutoMigrate(&model.User{})
+	err = db.AutoMigrate(&model.User{})
+	assert.NoError(t, err)
 	userDB := NewUser(db)
 
 	tests := []struct {
-		name string
-		email string
+		name     string
+		email    string
 		password string
-		want bool
-	} {
+		want     bool
+	}{
 		{"Chris", "chris@gm.com", "secret", false},
 		{"", "bob@gm.com", "123", true},
 		{"Tedd", "", "secret", true},

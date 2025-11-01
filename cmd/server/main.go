@@ -46,12 +46,15 @@ func main() {
 	}
 	db, err := gorm.Open(sqlite.Open("ecommerce.db"), &gorm.Config{})
 	// dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-    // config.DBUser, config.DBPassword, config.DBHost, config.DBPort, config.DBName)
+	// config.DBUser, config.DBPassword, config.DBHost, config.DBPort, config.DBName)
 	// db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
-	db.AutoMigrate(&model.User{}, &model.Product{}, &model.Payment{}, &model.Order{}, &model.OrderItem{})
+	err = db.AutoMigrate(&model.User{}, &model.Product{}, &model.Payment{}, &model.Order{}, &model.OrderItem{})
+	if err != nil {
+		panic(err)
+	}
 
 	userDB := userRepo.NewUser(db)
 	userHandler := handler.NewUserHandler(userDB)
@@ -63,8 +66,8 @@ func main() {
 	orderHandler := handler.NewOrderHandler(orderDB)
 
 	if configs.StripeSecretKey == "" {
-        log.Fatal("STRIPE_SECRET_KEY configuration is required")
-    }
+		log.Fatal("STRIPE_SECRET_KEY configuration is required")
+	}
 
 	stripeClient := payment.NewStripeClient(configs.StripeSecretKey)
 
@@ -76,7 +79,7 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.WithValue("jwt", configs.TokenAuth))
 	r.Use(middleware.WithValue("JwtExpiresIn", configs.JwtExpiresIn))
-	
+
 	r.Post("/users", userHandler.Create)
 	r.Post("/users/generate_token", userHandler.GetJWT)
 	r.With(jwtauth.Verifier(configs.TokenAuth), jwtauth.Authenticator).Get("/users/orders", userHandler.GetOrders)
@@ -101,7 +104,7 @@ func main() {
 		r.Put("/{id}", orderHandler.UpdateOrder)
 		r.Delete("/{id}", orderHandler.DeleteOrder)
 	})
-	
+
 	r.Route("/payments", func(r chi.Router) {
 		r.Use(jwtauth.Verifier(configs.TokenAuth))
 		r.Use(jwtauth.Authenticator)
@@ -111,5 +114,8 @@ func main() {
 
 	r.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/docs/doc.json")))
 
-	http.ListenAndServe(":8080", r)
+	log.Println("Server starting on :8080")
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatal("Server failed to start:", err)
+	}
 }

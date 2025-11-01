@@ -9,13 +9,13 @@ import (
 )
 
 type PaymentService struct {
-	paymentRepo paymentRepo.PaymentInterface
+	paymentRepo  paymentRepo.PaymentInterface
 	stripeClient payment.PaymentClient
 }
 
 func NewPaymentService(repo paymentRepo.PaymentInterface, client payment.PaymentClient) *PaymentService {
 	return &PaymentService{
-		paymentRepo: repo,
+		paymentRepo:  repo,
 		stripeClient: client,
 	}
 }
@@ -27,12 +27,12 @@ func (p *PaymentService) CreatePayment(orderID int, amount int64, currency strin
 	}
 
 	payment := &model.Payment{
-		OrderID: orderID,
-		AmountCents: amount / 100,
-		Currency: currency,
-		Status: string(intent.Status),
+		OrderID:               orderID,
+		AmountCents:           amount / 100,
+		Currency:              currency,
+		Status:                string(intent.Status),
 		StripePaymentIntentID: &intent.ID,
-		Method: "stripe",
+		Method:                "stripe",
 	}
 
 	if err := p.paymentRepo.Create(payment); err != nil {
@@ -49,8 +49,8 @@ func (p *PaymentService) UpdatePaymentStatus(paymentID int) (*model.Payment, err
 	}
 
 	if payment.StripePaymentIntentID == nil {
-        return nil, fmt.Errorf("payment has no stripe payment intent ID")
-    }
+		return nil, fmt.Errorf("payment has no stripe payment intent ID")
+	}
 
 	// check status with stripe
 	intent, err := p.stripeClient.GetPaymentIntentStatus(*payment.StripePaymentIntentID)
@@ -59,14 +59,14 @@ func (p *PaymentService) UpdatePaymentStatus(paymentID int) (*model.Payment, err
 	}
 
 	// update database if status changed
-	 newStatus := string(intent.Status)
-    if payment.Status != newStatus {
-        payment.Status = newStatus
-        if err := p.paymentRepo.Update(payment); err != nil {
-            return nil, fmt.Errorf("failed to update payment status: %w", err)
-        }
-    }
-    return payment, nil
+	newStatus := string(intent.Status)
+	if payment.Status != newStatus {
+		payment.Status = newStatus
+		if err := p.paymentRepo.Update(payment); err != nil {
+			return nil, fmt.Errorf("failed to update payment status: %w", err)
+		}
+	}
+	return payment, nil
 }
 
 func (p *PaymentService) GetPaymentByOrderID(orderID int) (*model.Payment, error) {

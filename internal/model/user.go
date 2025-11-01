@@ -8,16 +8,16 @@ import (
 )
 
 var (
-	ErrNameIsRequired = errors.New("name is required")
+	ErrNameIsRequired  = errors.New("name is required")
 	ErrEmailIsRequired = errors.New("email is required")
 )
 
 type User struct {
-	ID int64 `json:"id" gorm:"primaryKey;autoIncrement"`
-	Name string `json:"name"`
-	Email string `json:"email"`
-	Password string `json:"-"`
-	Orders []Order `gorm:"foreignKey:UserID" json:"orders,omitempty"`
+	ID        int64     `json:"id" gorm:"primaryKey;autoIncrement"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Password  string    `json:"-"`
+	Orders    []Order   `gorm:"foreignKey:UserID" json:"orders,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -26,16 +26,16 @@ func NewUser(name, email, password string) (*User, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
-	}   
+	}
 	now := time.Now()
 	newUser := &User{
-	       Name:      name,
-	       Email:     email,
-	       Password:  string(hash),
-	       CreatedAt: now,
-	       UpdatedAt: now,
-	       Orders:    []Order{},
-       }
+		Name:      name,
+		Email:     email,
+		Password:  string(hash),
+		CreatedAt: now,
+		UpdatedAt: now,
+		Orders:    []Order{},
+	}
 	err = newUser.Validate()
 	if err != nil {
 		return nil, err
